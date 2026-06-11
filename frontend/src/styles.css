@@ -260,6 +260,71 @@ ul { padding-left: 20px; }
 .detail-panel { position: sticky; top: 12px; }
 .info-block { background: var(--cream); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
 
+/* ---------- Доступность: масштаб шрифта для пожилых ---------- */
+.elder-app.font-large { font-size: 26px; }
+.elder-app.font-large .elder-btn { font-size: 28px; min-height: 108px; }
+.elder-app.font-large .big-text { font-size: 28px; }
+.elder-app.font-xlarge { font-size: 30px; }
+.elder-app.font-xlarge .elder-btn { font-size: 32px; min-height: 120px; }
+.elder-app.font-xlarge .big-text { font-size: 32px; }
+.font-toggle {
+  border: 2px solid var(--green); background: #fff; color: var(--green);
+  border-radius: 10px; font-size: 18px; font-weight: 800;
+  padding: 6px 12px; cursor: pointer;
+}
+.elder-greeting { font-size: 20px; color: var(--muted); margin: 0; text-align: center; }
+.elder-link { text-decoration: none; }
+
+/* ---------- Напоминания о лекарствах (экран пожилого) ---------- */
+.med-block {
+  background: #fff7e8; border: 3px solid var(--amber);
+  border-radius: 20px; padding: 14px;
+}
+.med-title { margin: 0 0 10px; font-weight: 800; }
+.med-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 8px 0; border-top: 1px dashed var(--amber);
+}
+.med-note { font-size: 0.8em; }
+.med-btn { flex-shrink: 0; font-size: 1em; min-height: 56px; }
+
+/* ---------- Чат ---------- */
+.chat { display: flex; flex-direction: column; }
+.chat-messages {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 50vh; overflow-y: auto; padding: 8px 2px;
+}
+.bubble {
+  background: #eef2ee; border-radius: 14px 14px 14px 4px;
+  padding: 10px 14px; max-width: 85%; align-self: flex-start;
+}
+.bubble-mine {
+  background: #dcefe4; border-radius: 14px 14px 4px 14px;
+  align-self: flex-end;
+}
+.bubble-operator, .bubble-admin { background: var(--amber-soft); }
+.bubble-author { font-weight: 700; font-size: 0.8rem; color: var(--green-dark); }
+.bubble-time { font-size: 0.72rem; color: var(--muted); text-align: right; }
+.bubble.big { font-size: 1em; border-width: 2px; }
+.chat-input { display: flex; gap: 8px; margin-top: 10px; }
+.chat-input .input { margin: 0; }
+.chat-input .btn { flex-shrink: 0; }
+.elder-chat {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 40vh; overflow-y: auto;
+  background: #fff; border: 2px solid var(--line);
+  border-radius: 16px; padding: 12px;
+}
+
+/* ---------- Графики аналитики ---------- */
+.chart { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+.chart-col {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end; height: 100%;
+}
+.chart-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; }
+.chart-label { font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
+
 @media (max-width: 760px) {
   .admin-shell { flex-direction: column; }
   .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }

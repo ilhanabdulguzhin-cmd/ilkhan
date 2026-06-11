@@ -66,12 +66,30 @@ CLARIFICATIONS = {
 }
 
 
+# Вопрос-подтверждение для диалогового сценария: AI переспрашивает,
+# правильно ли понял, прежде чем создавать заявку (кроме тревог).
+CONFIRM_QUESTIONS = {
+    RequestCategory.PRODUCTS: "Я понял: вам нужны продукты. Верно?",
+    RequestCategory.PHARMACY: "Я понял: вам нужно что-то из аптеки. Верно?",
+    RequestCategory.HOUSEHOLD: "Я понял: нужна помощь по дому. Верно?",
+    RequestCategory.CALL: "Я понял: вам нужно, чтобы оператор позвонил. Верно?",
+    RequestCategory.FAMILY_CONTACT: "Я понял: вы хотите связаться с родными. Верно?",
+    RequestCategory.LONELY: "Я понял: вы хотите поговорить. Верно?",
+    RequestCategory.REPEAT_ORDER: "Я понял: повторить прошлый заказ. Верно?",
+    RequestCategory.TECH_HELP: "Я понял: нужна помощь с техникой. Верно?",
+    RequestCategory.OTHER: "Я не до конца понял. Передать запрос оператору, чтобы он перезвонил и уточнил?",
+}
+
+
 @dataclass
 class Classification:
     category: str
     urgency: str  # normal | high | critical
     is_emergency: bool
     clarification: str
+    confidence: str = "low"  # low | medium | high
+    confirm_question: str = ""
+    alternatives: list[str] = field(default_factory=list)
     matched_markers: list[str] = field(default_factory=list)
 
 
@@ -81,12 +99,13 @@ def classify(text: str) -> Classification:
     matched_alarms = [m for m in ALARM_MARKERS if m in normalized]
     if matched_alarms:
         # Safety-правило: тревожные слова => немедленная передача оператору,
-        # без самостоятельных медицинских рекомендаций со стороны AI.
+        # без подтверждений и без медицинских рекомендаций со стороны AI.
         return Classification(
             category=RequestCategory.FEELING_BAD,
             urgency="critical",
             is_emergency=True,
             clarification=CLARIFICATIONS[RequestCategory.FEELING_BAD],
+            confidence="high",
             matched_markers=matched_alarms,
         )
 
@@ -96,10 +115,12 @@ def classify(text: str) -> Classification:
         if score:
             scores[category] = score
 
-    if not scores:
-        category = RequestCategory.OTHER
+    ranked = sorted(scores, key=lambda c: scores[c], reverse=True)
+    if not ranked:
+        category, confidence = RequestCategory.OTHER, "low"
     else:
-        category = max(scores, key=lambda c: scores[c])
+        category = ranked[0]
+        confidence = "high" if scores[category] >= 2 else "medium"
 
     urgency = "high" if category in (RequestCategory.CALL, RequestCategory.FAMILY_CONTACT) else "normal"
     return Classification(
@@ -107,4 +128,7 @@ def classify(text: str) -> Classification:
         urgency=urgency,
         is_emergency=False,
         clarification=CLARIFICATIONS.get(category, CLARIFICATIONS[RequestCategory.OTHER]),
+        confidence=confidence,
+        confirm_question=CONFIRM_QUESTIONS.get(category, CONFIRM_QUESTIONS[RequestCategory.OTHER]),
+        alternatives=ranked[1:3],
     )

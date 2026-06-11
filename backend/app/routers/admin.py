@@ -1,6 +1,9 @@
+import csv
+import io
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -8,6 +11,7 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..database import get_db
 from ..deps import get_current_user, get_elder_or_403, require_admin, require_staff
+from ..security import hash_password
 from ..services.helpers import audit, notify_relatives, serialize_elder
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -45,6 +49,18 @@ class CallResultIn(BaseModel):
 
 class EmergencyResolveIn(BaseModel):
     resolution: str = ""
+
+
+class PartnerUserIn(BaseModel):
+    phone: str
+    full_name: str
+    password: str
+
+
+class PromoIn(BaseModel):
+    code: str
+    discount_percent: int = 10
+    uses_left: int | None = None
 
 
 @router.get("/dashboard")
@@ -173,6 +189,130 @@ def update_partner(partner_id: int, data: PartnerUpdate,
     audit(db, user.id, "update_partner", "partner", partner.id)
     db.commit()
     return {"status": "ok"}
+
+
+@router.post("/partners/{partner_id}/user")
+def create_partner_user(partner_id: int, data: PartnerUserIn,
+                        user: models.User = Depends(require_admin),
+                        db: Session = Depends(get_db)):
+    """Создание логина партнёрского кабинета (только администратор)."""
+    partner = db.get(models.Partner, partner_id)
+    if not partner:
+        raise HTTPException(404, "Партнёр не найден")
+    if db.query(models.User).filter_by(phone=data.phone).first():
+        raise HTTPException(400, "Телефон уже занят")
+    partner_user = models.User(
+        phone=data.phone, full_name=data.full_name,
+        role=models.Role.PARTNER, partner_id=partner.id,
+        password_hash=hash_password(data.password),
+    )
+    db.add(partner_user)
+    audit(db, user.id, "create_partner_user", "partner", partner.id)
+    db.commit()
+    return {"id": partner_user.id, "status": "ok"}
+
+
+# --- Промокоды -------------------------------------------------------------
+
+@router.get("/promos")
+def list_promos(user: models.User = Depends(require_admin),
+                db: Session = Depends(get_db)):
+    promos = db.query(models.PromoCode).order_by(models.PromoCode.created_at.desc()).all()
+    return [
+        {"id": p.id, "code": p.code, "discount_percent": p.discount_percent,
+         "uses_left": p.uses_left, "is_active": p.is_active}
+        for p in promos
+    ]
+
+
+@router.post("/promos")
+def create_promo(data: PromoIn, user: models.User = Depends(require_admin),
+                 db: Session = Depends(get_db)):
+    code = data.code.strip().upper()
+    if db.query(models.PromoCode).filter_by(code=code).first():
+        raise HTTPException(400, "Такой промокод уже существует")
+    if not (1 <= data.discount_percent <= 100):
+        raise HTTPException(400, "Скидка должна быть от 1 до 100%")
+    promo = models.PromoCode(code=code, discount_percent=data.discount_percent,
+                             uses_left=data.uses_left)
+    db.add(promo)
+    audit(db, user.id, "create_promo", "promo", None, details=code)
+    db.commit()
+    return {"id": promo.id, "status": "ok"}
+
+
+@router.patch("/promos/{promo_id}")
+def toggle_promo(promo_id: int, user: models.User = Depends(require_admin),
+                 db: Session = Depends(get_db)):
+    promo = db.get(models.PromoCode, promo_id)
+    if not promo:
+        raise HTTPException(404, "Промокод не найден")
+    promo.is_active = not promo.is_active
+    db.commit()
+    return {"status": "ok", "is_active": promo.is_active}
+
+
+# --- Таймсерии для графиков и экспорт ---------------------------------------
+
+@router.get("/analytics/timeseries")
+def analytics_timeseries(days: int = 14, user: models.User = Depends(require_staff),
+                         db: Session = Depends(get_db)):
+    days = min(max(days, 7), 90)
+    today = datetime.utcnow().date()
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    buckets = [(today - timedelta(days=i)).isoformat() for i in range(days - 1, -1, -1)]
+
+    def bucketize(rows):
+        counts = {b: 0 for b in buckets}
+        for (created_at,) in rows:
+            key = created_at.date().isoformat()
+            if key in counts:
+                counts[key] += 1
+        return [counts[b] for b in buckets]
+
+    requests_rows = db.query(models.Request.created_at).filter(
+        models.Request.created_at >= cutoff).all()
+    checkin_rows = db.query(models.CheckIn.created_at).filter(
+        models.CheckIn.created_at >= cutoff).all()
+    emergency_rows = db.query(models.EmergencyEvent.created_at).filter(
+        models.EmergencyEvent.created_at >= cutoff).all()
+
+    return {
+        "dates": buckets,
+        "requests": bucketize(requests_rows),
+        "checkins": bucketize(checkin_rows),
+        "emergencies": bucketize(emergency_rows),
+    }
+
+
+@router.get("/export/requests.csv")
+def export_requests_csv(user: models.User = Depends(require_staff),
+                        db: Session = Depends(get_db)):
+    """Выгрузка заявок для НКО, фондов и партнёров (раздел 15.3 ТЗ)."""
+    requests = db.query(models.Request).order_by(models.Request.created_at.desc()).all()
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=";")
+    writer.writerow(["Номер", "Подопечный", "Соц. контур", "Категория", "Статус",
+                     "Приоритет", "Источник", "Стоимость", "Партнёр", "Создана"])
+    for r in requests:
+        writer.writerow([
+            r.number,
+            r.elder.full_name if r.elder else "",
+            "да" if (r.elder and r.elder.is_social) else "нет",
+            models.RequestCategory.LABELS.get(r.category, r.category),
+            models.RequestStatus.LABELS.get(r.status, r.status),
+            r.priority, r.source, r.cost or "",
+            r.partner.name if r.partner else "",
+            r.created_at.strftime("%d.%m.%Y %H:%M"),
+        ])
+    audit(db, user.id, "export_requests", "request", None)
+    db.commit()
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue().encode("utf-8-sig")]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=vnuchok_requests.csv"},
+    )
 
 
 # --- Звонки --------------------------------------------------------------

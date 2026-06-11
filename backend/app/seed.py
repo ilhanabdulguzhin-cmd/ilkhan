@@ -45,10 +45,11 @@ def seed_initial_data() -> None:
         db.add(models.Contact(elder_id=elder.id, name="Анна (дочь)",
                               phone="+79991234567", kind="emergency"))
 
+        retail = models.Partner(name="Магнит Доставка", kind="retail",
+                                city="Казань", phone="+78001000000",
+                                contact_person="Отдел B2B")
         db.add_all([
-            models.Partner(name="Магнит Доставка", kind="retail",
-                           city="Казань", phone="+78001000000",
-                           contact_person="Отдел B2B"),
+            retail,
             models.Partner(name="Аптека Здоровье", kind="pharmacy",
                            city="Казань", phone="+78002000000",
                            contact_person="Ирина Сергеевна"),
@@ -58,9 +59,35 @@ def seed_initial_data() -> None:
             models.Partner(name="Бытовая помощь 24", kind="household",
                            city="Казань", phone="+78004000000"),
         ])
+        db.flush()
+
+        db.add(models.User(
+            phone="+70000000003", full_name="Кабинет «Магнит Доставка»",
+            role=models.Role.PARTNER, partner_id=retail.id,
+            password_hash=hash_password("partner123"),
+        ))
 
         db.add(models.CheckInSchedule(elder_id=elder.id, frequency="daily",
                                       time_of_day="10:00"))
+
+        db.add_all([
+            models.Medication(elder_id=elder.id, name="Таблетки от давления",
+                              note="После завтрака, запить водой", times="09:00"),
+            models.Medication(elder_id=elder.id, name="Витамины",
+                              note="Назначены семьёй", times="09:00,20:00"),
+        ])
+
+        db.add(models.PromoCode(code="ZABOTA10", discount_percent=10))
+        db.add(models.PromoCode(code="PILOT50", discount_percent=50, uses_left=30))
+
+        db.add_all([
+            models.ChatMessage(elder_id=elder.id, author_id=relative.id,
+                               text="Мама, привет! Мы подключили тебе ВнучОК. "
+                                    "Нажимай большие кнопки, если что-то нужно ❤️"),
+            models.ChatMessage(elder_id=elder.id, author_id=operator.id,
+                               text="Здравствуйте! Я Мария, ваш оператор. "
+                                    "Звоните в любое время, поможем."),
+        ])
         db.commit()
     finally:
         db.close()

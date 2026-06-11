@@ -6,8 +6,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .database import Base, engine
-from .routers import admin, auth, checkins, notifications, payments, requests, users, voice
+from .routers import (
+    admin,
+    auth,
+    chat,
+    checkins,
+    medications,
+    notifications,
+    partner,
+    payments,
+    requests,
+    users,
+    voice,
+)
 from .seed import seed_initial_data
+from .services.monitor import start_monitor
 
 app = FastAPI(
     title="ВнучОК API",
@@ -48,6 +61,7 @@ async def rate_limiter(request: Request, call_next):
 def on_startup():
     Base.metadata.create_all(bind=engine)
     seed_initial_data()
+    start_monitor()
 
 
 @app.get("/health")
@@ -63,3 +77,6 @@ app.include_router(checkins.router)
 app.include_router(payments.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
+app.include_router(chat.router)
+app.include_router(medications.router)
+app.include_router(partner.router)

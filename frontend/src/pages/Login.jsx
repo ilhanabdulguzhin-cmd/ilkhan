@@ -195,7 +195,7 @@ function StaffLogin({ onDone, onError }) {
              onChange={(e) => setPassword(e.target.value)} />
       <button className="btn primary" type="submit">Войти</button>
       <p className="muted">Демо: оператор +70000000002 / operator123,
-        админ +70000000001 / admin123</p>
+        админ +70000000001 / admin123, партнёр +70000000003 / partner123</p>
     </form>
   );
 }

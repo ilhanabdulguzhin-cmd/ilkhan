@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { api, fmtDate } from '../api.js';
+import { api, fmtDate, getToken } from '../api.js';
+import Chat from '../components/Chat.jsx';
 
 /* Операторская админ-панель (раздел 8 ТЗ): дашборд, заявки с фильтрами,
-   тревоги, звонки, пользователи, партнёры, аналитика. */
+   тревоги, звонки, чат, подопечные, партнёры, промокоды, аналитика. */
 
 const PAGES = [
   { id: 'dashboard', label: '📊 Дашборд' },
   { id: 'requests', label: '📋 Заявки' },
   { id: 'emergencies', label: '🚨 Тревоги' },
   { id: 'calls', label: '📞 Звонки' },
+  { id: 'chat', label: '💬 Чаты семей' },
   { id: 'elders', label: '👴 Подопечные' },
   { id: 'partners', label: '🤝 Партнёры' },
   { id: 'analytics', label: '📈 Аналитика' },
+  { id: 'promos', label: '🎁 Промокоды', adminOnly: true },
 ];
 
 const STATUSES = [
@@ -26,7 +29,7 @@ export default function OperatorApp({ user, onLogout }) {
     <div className="admin-shell">
       <aside className="sidebar">
         <div className="brand">ВнучОК · {user.role === 'admin' ? 'Админ' : 'Оператор'}</div>
-        {PAGES.map((p) => (
+        {PAGES.filter((p) => !p.adminOnly || user.role === 'admin').map((p) => (
           <button key={p.id} className={page === p.id ? 'nav-item active' : 'nav-item'}
                   onClick={() => setPage(p.id)}>
             {p.label}
@@ -42,9 +45,11 @@ export default function OperatorApp({ user, onLogout }) {
         {page === 'requests' && <RequestsBoard user={user} />}
         {page === 'emergencies' && <Emergencies />}
         {page === 'calls' && <Calls />}
+        {page === 'chat' && <FamilyChats />}
         {page === 'elders' && <Elders />}
-        {page === 'partners' && <Partners />}
+        {page === 'partners' && <Partners isAdmin={user.role === 'admin'} />}
         {page === 'analytics' && <Analytics />}
+        {page === 'promos' && <Promos />}
       </main>
     </div>
   );
@@ -108,6 +113,18 @@ function RequestsBoard({ user }) {
     <div className="split">
       <div>
         <h1>Заявки</h1>
+        <button className="btn small" style={{ float: 'right' }} onClick={async () => {
+          const response = await fetch('/api/admin/export/requests.csv', {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          });
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'vnuchok_requests.csv';
+          link.click();
+          URL.revokeObjectURL(url);
+        }}>⬇ Экспорт CSV</button>
         <select className="input" value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="">Все статусы</option>
           {STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
@@ -397,7 +414,29 @@ function SocialToggle({ elder, onChanged }) {
   );
 }
 
-function Partners() {
+function FamilyChats() {
+  const [elders, setElders] = useState([]);
+  const [elderId, setElderId] = useState('');
+
+  useEffect(() => { api('/admin/elders').then(setElders); }, []);
+
+  return (
+    <>
+      <h1>Чаты семей</h1>
+      <select className="input" value={elderId} onChange={(e) => setElderId(e.target.value)}>
+        <option value="">Выберите подопечного</option>
+        {elders.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}
+      </select>
+      {elderId && (
+        <div className="card">
+          <Chat elderId={+elderId} />
+        </div>
+      )}
+    </>
+  );
+}
+
+function Partners({ isAdmin }) {
   const [partners, setPartners] = useState([]);
   const [form, setForm] = useState({ name: '', kind: 'retail', phone: '', city: '', contact_person: '' });
 
@@ -447,15 +486,118 @@ function Partners() {
           }}>
             {p.is_active ? 'Отключить' : 'Включить'}
           </button>
+          {isAdmin && <PartnerUserForm partnerId={p.id} />}
         </div>
       ))}
     </>
   );
 }
 
+function PartnerUserForm({ partnerId }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ phone: '', full_name: '', password: '' });
+  const [message, setMessage] = useState('');
+
+  if (!open) {
+    return <button className="btn link" onClick={() => setOpen(true)}>🔑 Создать логин кабинета</button>;
+  }
+  return (
+    <div className="info-block">
+      <b>Логин партнёрского кабинета</b>
+      {message && <div className="alert info">{message}</div>}
+      <div className="row">
+        <input className="input" placeholder="Телефон" value={form.phone}
+               onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <input className="input" placeholder="Название/имя" value={form.full_name}
+               onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+        <input className="input" placeholder="Пароль" value={form.password}
+               onChange={(e) => setForm({ ...form, password: e.target.value })} />
+      </div>
+      <button className="btn primary" disabled={!form.phone || !form.password}
+              onClick={async () => {
+                try {
+                  await api(`/admin/partners/${partnerId}/user`, { method: 'POST', body: form });
+                  setMessage('Логин создан. Партнёр входит во вкладке «Сотрудник».');
+                } catch (e) {
+                  setMessage(e.message);
+                }
+              }}>
+        Создать
+      </button>
+    </div>
+  );
+}
+
+function Promos() {
+  const [promos, setPromos] = useState([]);
+  const [form, setForm] = useState({ code: '', discount_percent: 10, uses_left: '' });
+
+  const reload = () => api('/admin/promos').then(setPromos);
+  useEffect(() => { reload(); }, []);
+
+  return (
+    <>
+      <h1>Промокоды</h1>
+      <div className="card">
+        <div className="row">
+          <input className="input" placeholder="КОД" value={form.code}
+                 onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} />
+          <input className="input" type="number" placeholder="Скидка %"
+                 value={form.discount_percent}
+                 onChange={(e) => setForm({ ...form, discount_percent: +e.target.value })} />
+          <input className="input" type="number" placeholder="Лимит (пусто = ∞)"
+                 value={form.uses_left}
+                 onChange={(e) => setForm({ ...form, uses_left: e.target.value })} />
+          <button className="btn primary" disabled={!form.code} onClick={async () => {
+            await api('/admin/promos', {
+              method: 'POST',
+              body: { ...form, uses_left: form.uses_left === '' ? null : +form.uses_left },
+            });
+            setForm({ code: '', discount_percent: 10, uses_left: '' });
+            reload();
+          }}>Создать</button>
+        </div>
+      </div>
+      {promos.map((p) => (
+        <div key={p.id} className="card">
+          <b>{p.code}</b> — скидка {p.discount_percent}% ·
+          осталось {p.uses_left ?? '∞'} ·
+          {p.is_active ? ' действует' : ' выключен'}
+          <button className="btn link" onClick={async () => {
+            await api(`/admin/promos/${p.id}`, { method: 'PATCH' });
+            reload();
+          }}>{p.is_active ? 'Выключить' : 'Включить'}</button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function BarChart({ title, dates, values, color = '#2f7d5d' }) {
+  const max = Math.max(...values, 1);
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <div className="chart">
+        {values.map((v, i) => (
+          <div key={i} className="chart-col" title={`${dates[i]}: ${v}`}>
+            <div className="chart-bar"
+                 style={{ height: `${(v / max) * 100}%`, background: color }} />
+            <span className="chart-label">{dates[i].slice(8)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Analytics() {
   const [data, setData] = useState(null);
-  useEffect(() => { api('/admin/analytics').then(setData); }, []);
+  const [series, setSeries] = useState(null);
+  useEffect(() => {
+    api('/admin/analytics').then(setData);
+    api('/admin/analytics/timeseries?days=14').then(setSeries).catch(() => {});
+  }, []);
   if (!data) return <p>Загрузка…</p>;
 
   const ROWS = [
@@ -484,6 +626,15 @@ function Analytics() {
           </div>
         ))}
       </div>
+      {series && (
+        <div style={{ marginTop: 16 }}>
+          <BarChart title="Заявки за 14 дней" dates={series.dates} values={series.requests} />
+          <BarChart title="Check-in события" dates={series.dates} values={series.checkins}
+                    color="#2563eb" />
+          <BarChart title="Тревожные события" dates={series.dates} values={series.emergencies}
+                    color="#c0392b" />
+        </div>
+      )}
     </>
   );
 }

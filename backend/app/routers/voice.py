@@ -23,6 +23,8 @@ router = APIRouter(prefix="/voice", tags=["voice"])
 class VoiceTextIn(BaseModel):
     elder_id: int
     text: str
+    # Диалоговый сценарий: пользователь подтвердил категорию, предложенную AI
+    confirmed_category: str | None = None
 
 
 @router.post("/classify")
@@ -36,6 +38,12 @@ def classify_text(data: VoiceTextIn, user: models.User = Depends(get_current_use
         "urgency": result.urgency,
         "is_emergency": result.is_emergency,
         "clarification": result.clarification,
+        "confidence": result.confidence,
+        "confirm_question": result.confirm_question,
+        "alternatives": [
+            {"category": c, "label": models.RequestCategory.LABELS.get(c)}
+            for c in result.alternatives
+        ],
     }
 
 
@@ -44,6 +52,11 @@ def create_from_voice(data: VoiceTextIn, user: models.User = Depends(get_current
                       db: Session = Depends(get_db)):
     elder = get_elder_or_403(db, user, data.elder_id)
     result = classify(data.text)
+    # Подтверждённая пользователем категория имеет приоритет над AI,
+    # но тревожная классификация не понижается никогда (safety-слой)
+    if (data.confirmed_category in models.RequestCategory.LABELS
+            and not result.is_emergency):
+        result.category = data.confirmed_category
 
     req = models.Request(
         elder_id=elder.id,

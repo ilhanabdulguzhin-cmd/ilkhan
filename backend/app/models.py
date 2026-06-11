@@ -91,6 +91,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), default="")
     email: Mapped[str] = mapped_column(String(255), default="")
     role: Mapped[str] = mapped_column(String(32), default=Role.RELATIVE, index=True)
+    partner_id: Mapped[int | None] = mapped_column(ForeignKey("partners.id"), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
@@ -348,6 +349,55 @@ class CallLog(Base):
 
     elder: Mapped["ElderProfile"] = relationship()
     operator: Mapped["User | None"] = relationship()
+
+
+class ChatMessage(Base):
+    """Семейный чат (версия 2 ТЗ): родственники, пожилой и оператор."""
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    elder_id: Mapped[int] = mapped_column(ForeignKey("elder_profiles.id"), index=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+    author: Mapped["User"] = relationship()
+
+
+class Medication(Base):
+    """Напоминание о приёме: название и времена задаёт семья/оператор.
+    Сервис не назначает препараты и не рекомендует дозировки (раздел 11 ТЗ)."""
+    __tablename__ = "medications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    elder_id: Mapped[int] = mapped_column(ForeignKey("elder_profiles.id"), index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    note: Mapped[str] = mapped_column(String(512), default="")
+    times: Mapped[str] = mapped_column(String(128), default="09:00")  # "08:00,20:00"
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+
+class MedicationLog(Base):
+    __tablename__ = "medication_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    medication_id: Mapped[int] = mapped_column(ForeignKey("medications.id"), index=True)
+    elder_id: Mapped[int] = mapped_column(ForeignKey("elder_profiles.id"), index=True)
+    taken_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+
+    medication: Mapped["Medication"] = relationship()
+
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    discount_percent: Mapped[int] = mapped_column(Integer, default=10)
+    uses_left: Mapped[int | None] = mapped_column(Integer, nullable=True)  # None = безлимит
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
 
 class SmsCode(Base):

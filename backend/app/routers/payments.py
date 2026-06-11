@@ -25,6 +25,7 @@ class PaymentIn(BaseModel):
 
 class SubscriptionIn(BaseModel):
     plan: str
+    promo_code: str = ""
 
 
 class SubscriptionUpdate(BaseModel):
@@ -125,6 +126,18 @@ def create_subscription(data: SubscriptionIn,
         raise HTTPException(400, "Неизвестный тариф")
     if tariff["code"] == "social" and user.role != models.Role.ADMIN:
         raise HTTPException(403, "Социальный тариф назначает администратор или НКО")
+    price = float(tariff["price"])
+    promo_note = ""
+    if data.promo_code and price > 0:
+        promo = db.query(models.PromoCode).filter_by(
+            code=data.promo_code.strip().upper(), is_active=True).first()
+        if not promo or (promo.uses_left is not None and promo.uses_left <= 0):
+            raise HTTPException(400, "Промокод не найден или больше не действует")
+        price = round(price * (100 - promo.discount_percent) / 100)
+        promo_note = f" (промокод {promo.code}, скидка {promo.discount_percent}%)"
+        if promo.uses_left is not None:
+            promo.uses_left -= 1
+
     existing = db.query(models.Subscription).filter_by(
         user_id=user.id, status="active").first()
     if existing:
@@ -135,9 +148,10 @@ def create_subscription(data: SubscriptionIn,
     )
     db.add(sub)
     db.flush()
-    if tariff["price"] > 0:
-        _charge(db, user, tariff["price"],
-                f"Подписка «{tariff['title']}» на 30 дней", subscription_id=sub.id)
+    if price > 0:
+        _charge(db, user, price,
+                f"Подписка «{tariff['title']}» на 30 дней{promo_note}",
+                subscription_id=sub.id)
     notify_user(db, user.id, "subscription",
                 f"Подписка «{tariff['title']}» активна",
                 f"Действует до {sub.expires_at:%d.%m.%Y}.")

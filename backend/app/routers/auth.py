@@ -147,8 +147,8 @@ def staff_login(data: StaffLoginIn, db: Session = Depends(get_db)):
     user = db.query(models.User).filter_by(phone=data.phone).first()
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(401, "Неверный телефон или пароль")
-    if user.role not in (models.Role.OPERATOR, models.Role.ADMIN):
-        raise HTTPException(403, "Вход по паролю доступен только сотрудникам")
+    if user.role not in (models.Role.OPERATOR, models.Role.ADMIN, models.Role.PARTNER):
+        raise HTTPException(403, "Вход по паролю доступен сотрудникам и партнёрам")
     audit(db, user.id, "login_password", "user", user.id)
     db.commit()
     return _auth_response(user)

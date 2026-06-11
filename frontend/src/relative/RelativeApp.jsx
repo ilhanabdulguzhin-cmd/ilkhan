@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { api, fmtDate } from '../api.js';
+import Chat from '../components/Chat.jsx';
 
 /* Кабинет родственника (раздел 7 ТЗ): главный экран отвечает на вопрос
-   «Всё ли в порядке?», лента событий, заказы, подписка, уведомления. */
+   «Всё ли в порядке?», лента событий, заказы, чат, лекарства, подписка. */
 
 const NAV = [
   { id: 'home', icon: '🏠', label: 'Главная' },
   { id: 'orders', icon: '📋', label: 'Заявки' },
-  { id: 'profile', icon: '👤', label: 'Профиль' },
-  { id: 'subscription', icon: '💳', label: 'Тариф' },
+  { id: 'chat', icon: '💬', label: 'Чат' },
+  { id: 'meds', icon: '💊', label: 'Лекарства' },
   { id: 'alerts', icon: '🔔', label: 'События' },
 ];
 
@@ -60,9 +61,17 @@ export default function RelativeApp({ user, onLogout }) {
               </select>
             )}
             {page === 'home' && elder && (
-              <Dashboard elder={elder} onAdd={() => setPage('add')} onOrders={() => setPage('orders')} />
+              <Dashboard elder={elder} goTo={setPage} />
             )}
             {page === 'orders' && elder && <Orders elder={elder} />}
+            {page === 'chat' && elder && (
+              <div className="card">
+                <h2>💬 Семейный чат · {elder.full_name}</h2>
+                <p className="muted small">Видят все родственники, подопечный и оператор.</p>
+                <Chat elderId={elder.id} />
+              </div>
+            )}
+            {page === 'meds' && elder && <MedicationsPage elder={elder} />}
             {page === 'profile' && elder && <Profile elder={elder} onSaved={loadElders} />}
             {page === 'subscription' && <SubscriptionPage />}
             {page === 'alerts' && <Notifications onRead={() => setUnread(0)} />}
@@ -151,7 +160,7 @@ function AddElder({ onCreated, canCancel, onCancel }) {
   );
 }
 
-function Dashboard({ elder, onAdd, onOrders }) {
+function Dashboard({ elder, goTo }) {
   const [feed, setFeed] = useState([]);
   const [requests, setRequests] = useState([]);
   const [message, setMessage] = useState('');
@@ -199,7 +208,11 @@ function Dashboard({ elder, onAdd, onOrders }) {
           <button className="btn quick" onClick={() => quick('call', 'Звонок оператора')}>📞 Заказать звонок</button>
           <button className="btn quick" onClick={() => quick('household', 'Помощь по дому')}>🧹 Помощь по дому</button>
         </div>
-        <button className="btn link" onClick={onAdd}>+ Добавить ещё одного близкого</button>
+        <div className="quick-grid">
+          <button className="btn quick" onClick={() => goTo('profile')}>👤 Профиль подопечного</button>
+          <button className="btn quick" onClick={() => goTo('subscription')}>💳 Тариф и оплата</button>
+        </div>
+        <button className="btn link" onClick={() => goTo('add')}>+ Добавить ещё одного близкого</button>
       </div>
 
       {active.length > 0 && (
@@ -212,7 +225,7 @@ function Dashboard({ elder, onAdd, onOrders }) {
               <span className="muted small">{fmtDate(r.created_at)}</span>
             </div>
           ))}
-          <button className="btn link" onClick={onOrders}>Все заявки →</button>
+          <button className="btn link" onClick={() => goTo('orders')}>Все заявки →</button>
         </div>
       )}
 
@@ -378,11 +391,81 @@ function Profile({ elder, onSaved }) {
   );
 }
 
+function MedicationsPage({ elder }) {
+  const [meds, setMeds] = useState([]);
+  const [log, setLog] = useState([]);
+  const [form, setForm] = useState({ name: '', note: '', times: '09:00' });
+
+  const reload = () => {
+    api(`/medications?elder_id=${elder.id}`).then(setMeds).catch(() => {});
+    api(`/medications/log?elder_id=${elder.id}`).then(setLog).catch(() => {});
+  };
+  useEffect(reload, [elder.id]);
+
+  const add = async () => {
+    if (!form.name.trim()) return;
+    await api('/medications', { method: 'POST', body: { elder_id: elder.id, ...form } });
+    setForm({ name: '', note: '', times: '09:00' });
+    reload();
+  };
+
+  return (
+    <>
+      <div className="card">
+        <h2>💊 Напоминания о приёме</h2>
+        <p className="muted small">Платформа только напоминает по расписанию, которое
+          задаёте вы. Назначение лекарств и дозировки — исключительно задача врача.</p>
+        {meds.map((m) => (
+          <div key={m.id} className="feed-item">
+            <b>{m.name} {m.taken_today && '✅ принято сегодня'}</b>
+            <span className="muted">{m.times.join(', ')}{m.note ? ` · ${m.note}` : ''}
+              {!m.is_active && ' · приостановлено'}</span>
+            <span className="row" style={{ gap: 12 }}>
+              <button className="btn link small" onClick={async () => {
+                await api(`/medications/${m.id}`, {
+                  method: 'PATCH', body: { is_active: !m.is_active },
+                });
+                reload();
+              }}>{m.is_active ? 'Приостановить' : 'Возобновить'}</button>
+              <button className="btn link small" onClick={async () => {
+                await api(`/medications/${m.id}`, { method: 'DELETE' });
+                reload();
+              }}>Удалить</button>
+            </span>
+          </div>
+        ))}
+        <h3>Добавить напоминание</h3>
+        <label>Название (как в назначении врача)</label>
+        <input className="input" value={form.name}
+               onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <label>Заметка (например: «после еды»)</label>
+        <input className="input" value={form.note}
+               onChange={(e) => setForm({ ...form, note: e.target.value })} />
+        <label>Времена приёма (через запятую)</label>
+        <input className="input" value={form.times} placeholder="08:00,20:00"
+               onChange={(e) => setForm({ ...form, times: e.target.value })} />
+        <button className="btn primary" onClick={add}>Добавить</button>
+      </div>
+      <div className="card">
+        <h3>Отметки за неделю</h3>
+        {log.length === 0 && <p className="muted">Отметок пока нет.</p>}
+        {log.map((l) => (
+          <div key={l.id} className="feed-item">
+            <b>✅ {l.medication}</b>
+            <span className="muted small">{fmtDate(l.taken_at)}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function SubscriptionPage() {
   const [tariffs, setTariffs] = useState([]);
   const [current, setCurrent] = useState(null);
   const [payments, setPayments] = useState([]);
   const [message, setMessage] = useState('');
+  const [promo, setPromo] = useState('');
 
   const reload = () => {
     api('/tariffs').then((t) => setTariffs(t.filter((x) => x.code !== 'social')));
@@ -392,14 +475,26 @@ function SubscriptionPage() {
   useEffect(reload, []);
 
   const subscribe = async (plan) => {
-    await api('/subscriptions/create', { method: 'POST', body: { plan } });
-    setMessage('Подписка оформлена, оплата прошла успешно!');
-    reload();
+    try {
+      await api('/subscriptions/create', {
+        method: 'POST', body: { plan, promo_code: promo },
+      });
+      setMessage('Подписка оформлена, оплата прошла успешно!');
+      reload();
+    } catch (e) {
+      setMessage(e.message);
+    }
   };
 
   return (
     <>
       {message && <div className="alert info">{message}</div>}
+      <div className="card row" style={{ alignItems: 'center' }}>
+        <label style={{ margin: 0, flex: 'none' }}>🎁 Промокод:</label>
+        <input className="input" style={{ margin: 0 }} value={promo}
+               placeholder="Например: PILOT50"
+               onChange={(e) => setPromo(e.target.value.toUpperCase())} />
+      </div>
       {current && (
         <div className="card">
           <h3>Текущий тариф: «{current.plan_title}»</h3>

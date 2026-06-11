@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { api, speak } from '../api.js';
+import { api, fmtDate, speak } from '../api.js';
 
-/* Приложение пожилого пользователя: один экран — одно действие,
-   крупные кнопки, голосовое сопровождение (раздел 6 и 23.1 ТЗ). */
+/* Приложение пожилого пользователя v2: один экран — одно действие,
+   крупные кнопки, голосовое сопровождение, диалоговый AI с подтверждением,
+   напоминания о лекарствах, семейный чат, звонок родным (разделы 6, 23.1 ТЗ). */
 
 const HELP_OPTIONS = [
   { id: 'feeling_bad', icon: '🤒', label: 'Плохо себя чувствую', emergency: true },
@@ -13,17 +14,36 @@ const HELP_OPTIONS = [
   { id: 'other', icon: '❓', label: 'Другое' },
 ];
 
+const FONT_SIZES = ['font-normal', 'font-large', 'font-xlarge'];
+
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Доброй ночи';
+  if (hour < 12) return 'Доброе утро';
+  if (hour < 18) return 'Добрый день';
+  return 'Добрый вечер';
+}
+
 export default function ElderApp({ user, onLogout }) {
   const [elder, setElder] = useState(null);
   const [screen, setScreen] = useState('home');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [fontIdx, setFontIdx] = useState(
+    () => +(localStorage.getItem('vnuchok_font') || 0)
+  );
 
   useEffect(() => {
     api('/users/me')
       .then((me) => setElder(me.elder_profile))
       .catch((e) => setError(e.message));
   }, []);
+
+  const cycleFont = () => {
+    const next = (fontIdx + 1) % FONT_SIZES.length;
+    setFontIdx(next);
+    localStorage.setItem('vnuchok_font', String(next));
+  };
 
   if (error) return <div className="elder-app"><p className="big-text">{error}</p></div>;
   if (!elder) return <div className="elder-app"><p className="big-text">Загрузка…</p></div>;
@@ -50,9 +70,12 @@ export default function ElderApp({ user, onLogout }) {
   const props = { elder, setScreen, done, createRequest };
 
   return (
-    <div className="elder-app">
+    <div className={`elder-app ${FONT_SIZES[fontIdx]}`}>
       <header className="elder-header">
         <span className="elder-title">ВнучОК</span>
+        <button className="font-toggle" onClick={cycleFont} title="Размер букв">
+          A{fontIdx > 0 ? '+'.repeat(fontIdx) : ''}
+        </button>
         <span className="elder-name">{elder.full_name.split(' ')[0]}</span>
         <button className="btn link small" onClick={onLogout}>Выйти</button>
       </header>
@@ -62,6 +85,8 @@ export default function ElderApp({ user, onLogout }) {
       {screen === 'products' && <ProductsScreen {...props} />}
       {screen === 'pharmacy' && <PharmacyScreen {...props} />}
       {screen === 'repeat' && <RepeatScreen {...props} />}
+      {screen === 'call' && <CallScreen {...props} />}
+      {screen === 'chat' && <ChatScreen {...props} />}
       {screen === 'done' && (
         <div className="elder-screen center">
           <div className="done-icon">✅</div>
@@ -78,6 +103,13 @@ export default function ElderApp({ user, onLogout }) {
 
 function Home({ elder, setScreen, done }) {
   const [okPressed, setOkPressed] = useState(false);
+  const [meds, setMeds] = useState([]);
+
+  useEffect(() => {
+    api(`/medications?elder_id=${elder.id}`)
+      .then((items) => setMeds(items.filter((m) => m.is_active)))
+      .catch(() => {});
+  }, [elder.id]);
 
   const allGood = async () => {
     try {
@@ -88,11 +120,42 @@ function Home({ elder, setScreen, done }) {
     } catch { /* повторное нажатие не критично */ }
   };
 
+  const markTaken = async (med) => {
+    await api(`/medications/${med.id}/taken`, { method: 'POST' });
+    speak(`Отметили: ${med.name}. Молодец!`);
+    setMeds(meds.map((m) => (m.id === med.id ? { ...m, taken_today: true } : m)));
+  };
+
+  const today = new Date().toLocaleDateString('ru-RU', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+  const pendingMeds = meds.filter((m) => !m.taken_today);
+
   return (
     <div className="elder-screen">
+      <p className="elder-greeting">{greeting()}! Сегодня {today}.</p>
+
       <button className="elder-btn ok" onClick={allGood}>
         {okPressed ? '✅ Передали родным!' : '👍 Всё хорошо'}
       </button>
+
+      {pendingMeds.length > 0 && (
+        <div className="med-block">
+          <p className="med-title">💊 Не забудьте сегодня:</p>
+          {pendingMeds.map((m) => (
+            <div key={m.id} className="med-item">
+              <div>
+                <b>{m.name}</b> — {m.times.join(', ')}
+                {m.note && <div className="muted med-note">{m.note}</div>}
+              </div>
+              <button className="btn primary med-btn" onClick={() => markTaken(m)}>
+                ✅ Принял
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="elder-grid">
         <button className="elder-btn" onClick={() => setScreen('products')}>
           🛒<span>Продукты</span>
@@ -100,31 +163,31 @@ function Home({ elder, setScreen, done }) {
         <button className="elder-btn" onClick={() => setScreen('pharmacy')}>
           💊<span>Лекарства</span>
         </button>
-        <button className="elder-btn" onClick={() => {
-          api('/requests', {
-            method: 'POST',
-            body: { elder_id: elder.id, category: 'call', source: 'button' },
-          }).then(() => done('Хорошо! Вам перезвонят'));
-        }}>
-          📞<span>Позвонить мне</span>
+        <button className="elder-btn" onClick={() => setScreen('call')}>
+          📞<span>Позвонить</span>
         </button>
         <button className="elder-btn" onClick={() => setScreen('repeat')}>
           🔁<span>Повторить заказ</span>
         </button>
+        <button className="elder-btn" onClick={() => setScreen('chat')}>
+          💬<span>Чат с семьёй</span>
+        </button>
+        <button className="elder-btn voice" onClick={() => setScreen('voice')}>
+          🎤<span>Сказать голосом</span>
+        </button>
       </div>
       <button className="elder-btn danger" onClick={() => setScreen('help')}>
         🆘 Мне нужна помощь
-      </button>
-      <button className="elder-btn voice" onClick={() => setScreen('voice')}>
-        🎤 Сказать голосом
       </button>
     </div>
   );
 }
 
 function VoiceScreen({ elder, setScreen, done }) {
+  const [step, setStep] = useState('listen'); // listen | confirm
   const [listening, setListening] = useState(false);
   const [text, setText] = useState('');
+  const [ai, setAi] = useState(null);
   const [supported] = useState(
     () => 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
   );
@@ -151,21 +214,65 @@ function VoiceScreen({ elder, setScreen, done }) {
     setListening(true);
   };
 
-  const send = async () => {
-    if (!text.trim()) return;
+  const createRequest = async (confirmedCategory) => {
     try {
       const res = await api('/voice/create-request', {
         method: 'POST',
-        body: { elder_id: elder.id, text },
+        body: { elder_id: elder.id, text, confirmed_category: confirmedCategory },
       });
       done(
         res.ai.is_emergency ? 'Мы вас услышали!' : 'Заявка принята!',
         res.ai.clarification
       );
-    } catch (e) {
+    } catch {
       speak('Не получилось отправить. Попробуйте ещё раз.');
     }
   };
+
+  // Диалоговый сценарий: сначала AI переспрашивает, верно ли понял.
+  // Тревожные запросы уходят сразу, без лишнего шага (safety).
+  const analyze = async () => {
+    if (!text.trim()) return;
+    try {
+      const result = await api('/voice/classify', {
+        method: 'POST',
+        body: { elder_id: elder.id, text },
+      });
+      if (result.is_emergency) {
+        await createRequest(null);
+        return;
+      }
+      setAi(result);
+      setStep('confirm');
+      speak(result.confirm_question);
+    } catch {
+      speak('Не получилось. Попробуйте ещё раз.');
+    }
+  };
+
+  if (step === 'confirm' && ai) {
+    return (
+      <div className="elder-screen center">
+        <p className="big-text muted">Вы сказали: «{text}»</p>
+        <h2 className="big-text">{ai.confirm_question}</h2>
+        <button className="elder-btn ok" onClick={() => createRequest(ai.category)}>
+          ✅ Да, верно
+        </button>
+        {ai.alternatives.map((alt) => (
+          <button key={alt.category} className="elder-btn"
+                  onClick={() => createRequest(alt.category)}>
+            Нет, мне нужно: {alt.label}
+          </button>
+        ))}
+        <button className="elder-btn neutral" onClick={() => {
+          setStep('listen'); setText(''); setAi(null);
+          speak('Хорошо, скажите ещё раз.');
+        }}>
+          🎤 Сказать заново
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="elder-screen center">
@@ -187,7 +294,7 @@ function VoiceScreen({ elder, setScreen, done }) {
         onChange={(e) => setText(e.target.value)}
         placeholder="Например: закажи хлеб и молоко"
       />
-      <button className="elder-btn ok" onClick={send} disabled={!text.trim()}>
+      <button className="elder-btn ok" onClick={analyze} disabled={!text.trim()}>
         ✅ Отправить
       </button>
       <button className="elder-btn neutral" onClick={() => setScreen('home')}>⬅ Назад</button>
@@ -226,6 +333,92 @@ function HelpScreen({ elder, setScreen, done, createRequest }) {
           {option.icon} {option.label}
         </button>
       ))}
+      <button className="elder-btn neutral" onClick={() => setScreen('home')}>⬅ Назад</button>
+    </div>
+  );
+}
+
+function CallScreen({ elder, setScreen, done }) {
+  useEffect(() => { speak('Кому позвонить?'); }, []);
+
+  return (
+    <div className="elder-screen">
+      <h2 className="big-text center-text">📞 Позвонить</h2>
+      {elder.contacts.map((c) => (
+        <a key={c.id} className="elder-btn elder-link" href={`tel:${c.phone}`}>
+          {c.kind === 'emergency' ? '🆘' : '❤️'} {c.name}
+          <small>{c.phone}</small>
+        </a>
+      ))}
+      <button className="elder-btn" onClick={() => {
+        api('/requests', {
+          method: 'POST',
+          body: { elder_id: elder.id, category: 'call', source: 'button' },
+        }).then(() => done('Хорошо! Вам перезвонят', 'Оператор наберёт вас в ближайшее время.'));
+      }}>
+        ☎️ Пусть оператор позвонит мне
+      </button>
+      <button className="elder-btn" onClick={() => {
+        api('/requests', {
+          method: 'POST',
+          body: { elder_id: elder.id, category: 'family_contact', source: 'button' },
+        }).then(() => done('Передали родным!', 'Они увидят, что вы хотите поговорить.'));
+      }}>
+        👨‍👩‍👧 Передать родным, что скучаю
+      </button>
+      <button className="elder-btn neutral" onClick={() => setScreen('home')}>⬅ Назад</button>
+    </div>
+  );
+}
+
+function ChatScreen({ elder, setScreen }) {
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState('');
+
+  const reload = () =>
+    api(`/chat/${elder.id}/messages`).then(setMessages).catch(() => {});
+
+  useEffect(() => {
+    reload();
+    const timer = setInterval(reload, 8000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const send = async () => {
+    if (!text.trim()) return;
+    await api(`/chat/${elder.id}/messages`, { method: 'POST', body: { text } });
+    setText('');
+    reload();
+  };
+
+  const readAloud = () => {
+    const recent = messages.slice(-3)
+      .map((m) => `${m.mine ? 'Вы' : m.author_name}: ${m.text}`)
+      .join('. ');
+    speak(recent || 'Сообщений пока нет.');
+  };
+
+  return (
+    <div className="elder-screen">
+      <h2 className="big-text center-text">💬 Чат с семьёй</h2>
+      <button className="elder-btn voice" onClick={readAloud}>
+        🔊 Прочитать вслух
+      </button>
+      <div className="elder-chat">
+        {messages.slice(-12).map((m) => (
+          <div key={m.id} className={`bubble big ${m.mine ? 'bubble-mine' : ''}`}>
+            {!m.mine && <div className="bubble-author">{m.author_name}</div>}
+            {m.text}
+          </div>
+        ))}
+        {messages.length === 0 && <p className="muted center-text">Сообщений пока нет.</p>}
+      </div>
+      <textarea className="input big-input" rows={2} value={text}
+                placeholder="Написать родным…"
+                onChange={(e) => setText(e.target.value)} />
+      <button className="elder-btn ok" onClick={send} disabled={!text.trim()}>
+        ➤ Отправить
+      </button>
       <button className="elder-btn neutral" onClick={() => setScreen('home')}>⬅ Назад</button>
     </div>
   );
@@ -335,7 +528,7 @@ function RepeatScreen({ elder, setScreen, done }) {
         try {
           await api('/requests/repeat-last', { method: 'POST', body: { elder_id: elder.id } });
           done('Заказ повторён!');
-        } catch { /* ошибка озвучена done-экраном не будет */ }
+        } catch { /* ошибка не критична — оператор увидит дубль */ }
       }}>
         ✅ Да, повторить
       </button>

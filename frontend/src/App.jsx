@@ -5,6 +5,7 @@ import Login from './pages/Login.jsx';
 import ElderApp from './elder/ElderApp.jsx';
 import RelativeApp from './relative/RelativeApp.jsx';
 import OperatorApp from './operator/OperatorApp.jsx';
+import PartnerApp from './partner/PartnerApp.jsx';
 
 export default function App() {
   const [user, setUser] = useState(getUser());
@@ -19,6 +20,7 @@ export default function App() {
   if (user.role === 'elder') return <ElderApp user={user} onLogout={logout} />;
   if (user.role === 'operator' || user.role === 'admin')
     return <OperatorApp user={user} onLogout={logout} />;
+  if (user.role === 'partner') return <PartnerApp user={user} onLogout={logout} />;
 
   return (
     <Routes>
