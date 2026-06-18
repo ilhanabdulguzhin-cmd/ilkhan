@@ -1,9 +1,11 @@
+import os
 import time
 from collections import defaultdict, deque
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .database import Base, engine
 from .routers import (
@@ -69,14 +71,19 @@ def health():
     return {"status": "ok", "service": "vnuchok-api"}
 
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(requests.router)
-app.include_router(voice.router)
-app.include_router(checkins.router)
-app.include_router(payments.router)
-app.include_router(notifications.router)
-app.include_router(admin.router)
-app.include_router(chat.router)
-app.include_router(medications.router)
-app.include_router(partner.router)
+app.include_router(auth.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(requests.router, prefix="/api")
+app.include_router(voice.router, prefix="/api")
+app.include_router(checkins.router, prefix="/api")
+app.include_router(payments.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
+app.include_router(medications.router, prefix="/api")
+app.include_router(partner.router, prefix="/api")
+
+# Serve built frontend (production: static/ dir populated by Docker build)
+_static = os.path.join(os.path.dirname(__file__), "..", "static")
+if os.path.isdir(_static):
+    app.mount("/", StaticFiles(directory=_static, html=True), name="static")
