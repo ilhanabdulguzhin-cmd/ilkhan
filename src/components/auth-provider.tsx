@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { loadRemoteUserData, saveRemoteUserData } from "@/lib/user-store";
 import type { UserData } from "@/lib/user-store";
 
 type AuthUser = User & UserData;
@@ -47,11 +48,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshAsync = useCallback(async () => {
     if (!supabase) return;
     const { data } = await supabase.auth.getUser();
-    setUserData(toAuthUser(data.user));
-    if (data.user) {
+    const baseUser = toAuthUser(data.user);
+    if (data.user && baseUser) {
+      const remoteData = await loadRemoteUserData(data.user.id);
+      const merged = remoteData ? { ...baseUser, ...remoteData, profile: { ...baseUser.profile, ...remoteData.profile, id: data.user.id, email: data.user.email ?? remoteData.profile.email } } as AuthUser : baseUser;
+      setUserData(merged);
+      if (!remoteData) await saveRemoteUserData(data.user.id, merged);
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
       setIsAdmin(profile?.role === "admin");
-    } else setIsAdmin(false);
+    } else {
+      setUserData(null);
+      setIsAdmin(false);
+    }
     setLoading(false);
   }, [supabase, toAuthUser]);
   useEffect(() => {
@@ -60,7 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => { setUserData(toAuthUser(session?.user ?? null)); setLoading(false); void refreshAsync(); });
     return () => data.subscription.unsubscribe();
   }, [refreshAsync, supabase]);
+  const updateUserData = useCallback((data: AuthUser) => {
+    setUserData(data);
+    if (supabase) void supabase.auth.getUser().then(({ data: authData }) => {
+      if (authData.user) void saveRemoteUserData(authData.user.id, data);
+    });
+  }, [supabase]);
   const logout = useCallback(() => { if (supabase) void supabase.auth.signOut(); setUserData(null); }, [supabase]);
-  return <AuthContext.Provider value={{ isAuthenticated: !!userData, userData, loading, refresh: () => void refreshAsync(), refreshAsync, updateUserData: setUserData, logout, isAdmin }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ isAuthenticated: !!userData, userData, loading, refresh: () => void refreshAsync(), refreshAsync, updateUserData, logout, isAdmin }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { return useContext(AuthContext); }
