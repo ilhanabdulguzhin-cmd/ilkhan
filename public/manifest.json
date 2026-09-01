@@ -1,0 +1,45 @@
+{
+  "name": "Monetrix — Умные финансы",
+  "short_name": "Monetrix",
+  "description": "Финансовая платформа: анализ расходов, AI-консультант, вклады, налоговые вычеты",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3629B7",
+  "orientation": "portrait-primary",
+  "lang": "ru",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Кэшик — AI-консультант",
+      "url": "/ai-consultant",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Загрузить выписку",
+      "url": "/upload",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
