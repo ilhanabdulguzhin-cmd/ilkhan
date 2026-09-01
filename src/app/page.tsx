@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useMemo, useEffect, useState, useCallback } from "react";
 import { getDigest, refreshDigest, type DigestResult } from "@/lib/market-digest";
 import { useRealtimeMarket } from "@/hooks/use-realtime-market";
+import { FinancialProgress } from "@/components/financial-progress";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -267,7 +268,7 @@ function generateTips(
     });
   }
 
-  // ── FUTURE tips ──────────────────────────────────────────────────────────
+  // ── FUTURE tips ──────────────────────────────────────────────────���───────
   future.push({
     id: "portfolio", urgency: "medium", horizon: "future",
     title: "Сформируйте инвестиционный портфель",
@@ -457,6 +458,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        <FinancialProgress userId={userData?.id} />
 
         {/* ── Market Overview Strip — LIVE FROM MOEX ISS + CBR API ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1116,7 +1119,7 @@ export default function DashboardPage() {
               </svg>
               <div>
                 <p className="text-[10px] font-bold text-[#1E40AF] leading-tight">
-                  ПЛАТФОРМА УНИВЕРСИТЕТСКОГО<br />ТЕХНОЛОГИЧЕСКОГО ПРЕДПРИНИМАТЕЛЬСТВА
+                  ПЛАТФОРМА УНИВЕРСИТЕТСКОГО<br />ТЕ��НОЛОГИЧЕСКОГО ПРЕДПРИНИМАТЕЛЬСТВА
                 </p>
                 <p className="text-[8px] text-[#3B82F6]">федеральный проект «Технологии»</p>
               </div>
