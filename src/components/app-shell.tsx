@@ -303,7 +303,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                     <p className="text-[10px] text-white/30 uppercase tracking-widest px-3 mb-1.5">{groupLabels[group]}</p>
                     <div className="space-y-0.5">
                       {items.map((item) => {
-                        const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const isActive = pathname.startsWith(item.href);
                         const accentColor = "color" in item ? (item as { color: string }).color : undefined;
                         return (
                           <Link
@@ -340,7 +340,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-[#E5E5EA] safe-area-inset-bottom">
         <div className="flex items-center justify-around px-1 py-1">
           {mobileBottomNav.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const isActive = pathname.startsWith(item.href);
             const isAdd = "isAdd" in item && item.isAdd;
             return (
               <Link key={item.href} href={item.href} className="flex flex-col items-center gap-0.5 px-2 py-1 min-w-[60px]">
