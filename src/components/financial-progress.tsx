@@ -13,6 +13,12 @@ const actions = [
   { id: "goal", label: "Создать финансовую цель" },
 ];
 
+type ProgressRow = {
+  points: number | null;
+  streak_days: number | null;
+  completed_actions: unknown;
+};
+
 export function FinancialProgress({ userId }: { userId?: string }) {
   const [points, setPoints] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -21,11 +27,11 @@ export function FinancialProgress({ userId }: { userId?: string }) {
 
   useEffect(() => {
     if (!userId) return;
-    void supabase.from("user_progress").select("points,streak_days,completed_actions").eq("user_id", userId).maybeSingle().then(({ data }) => {
+    void supabase.from("user_progress").select("points,streak_days,completed_actions").eq("user_id", userId).maybeSingle().then(({ data }: { data: ProgressRow | null }) => {
       if (!data) return;
       setPoints(data.points ?? 0);
       setStreak(data.streak_days ?? 0);
-      setCompleted(Array.isArray(data.completed_actions) ? data.completed_actions : []);
+      setCompleted(Array.isArray(data.completed_actions) && data.completed_actions.every((item): item is string => typeof item === "string") ? data.completed_actions : []);
     });
   }, [supabase, userId]);
 
