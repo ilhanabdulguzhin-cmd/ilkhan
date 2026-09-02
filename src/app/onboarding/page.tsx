@@ -572,7 +572,7 @@ export default function OnboardingPage() {
                   ))}
                 </div>
 
-                <Button onClick={() => router.push("/")}
+                <Button onClick={() => router.push("/dashboard")}
                   className="w-full h-12 rounded-xl bg-gradient-to-r from-[#3629B7] to-[#4a3dd4] hover:from-[#2a1f8f] hover:to-[#3629B7] text-white font-black text-base shadow-lg shadow-[#3629B7]/25">
                   Открыть дашборд <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>

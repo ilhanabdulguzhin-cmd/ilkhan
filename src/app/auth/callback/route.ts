@@ -6,7 +6,10 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code')
   if (code) {
     const supabase = await createClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) return NextResponse.redirect(new URL('/auth?error=callback', url.origin))
   }
-  return NextResponse.redirect(new URL('/onboarding', url.origin))
+  const requestedNext = url.searchParams.get('next')
+  const next = requestedNext && /^\/(dashboard|business|settings|onboarding)(\/|$)/.test(requestedNext) ? requestedNext : '/dashboard'
+  return NextResponse.redirect(new URL(next, url.origin))
 }
