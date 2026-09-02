@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,13 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setCheckEmail(params.get("check-email") === "1");
+    if (params.get("error") === "callback") setError("Ссылка устарела или уже использована. Запросите новую.");
+  }, []);
 
   const features = [
     {
@@ -83,9 +90,15 @@ export default function AuthPage() {
           return;
         }
         const { data, error: authError } = await supabase.auth.signUp({ email, password, options: { data: { display_name: name }, emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback` } });
-        if (authError) { setError(authError.message.includes("already") ? "Этот email уже зарегистрирован" : authError.message); setLoading(false); return; }
+        if (authError) {
+          const message = authError.message.toLowerCase();
+          setError(message.includes("rate limit") || message.includes("too many") ? "Письмо уже отправлялось слишком часто. Подождите немного и попробуйте снова." : message.includes("already") ? "Этот email уже зарегистрирован. Переключитесь на «Войти»." : message.includes("invalid") ? "Проверьте email и убедитесь, что пароль содержит минимум 8 символов." : "Не удалось создать аккаунт. Проверьте данные и попробуйте ещё раз.");
+          setLoading(false);
+          return;
+        }
         refresh();
-        router.push(data.session ? "/onboarding" : "/auth?check-email=1");
+        if (!data.session) { setCheckEmail(true); setLoading(false); return; }
+        router.push("/onboarding");
       } else {
         if (!email.trim()) {
           setError("Введите email");
@@ -213,6 +226,12 @@ export default function AuthPage() {
             </button>
           </div>
 
+          {checkEmail && mode === "register" && (
+            <div className="mb-6 rounded-xl border border-[#34C759]/20 bg-[#34C759]/10 p-4 text-sm text-[#216e39]">
+              Аккаунт создан. Откройте письмо на вашей почте и подтвердите email, затем вернитесь сюда и нажмите «Войти».
+            </div>
+          )}
+
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-[#303030] mb-1">
               {mode === "register" ? "Добро пожаловать!" : "С возвращением!"}
@@ -263,7 +282,7 @@ export default function AuthPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder={mode === "register" ? "Минимум 6 символов" : "Введите пароль"}
+                  placeholder={mode === "register" ? "Минимум 8 символов" : "Введите пароль"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-11 pl-4 pr-11 rounded-xl bg-white border-[#E5E5EA] focus-visible:ring-[#3629B7]/30 focus-visible:border-[#3629B7]"
