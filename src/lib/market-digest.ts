@@ -229,7 +229,7 @@ export interface DigestResult {
   fromCache: boolean;
 }
 
-const CACHE_KEY = "monetrix_digest_v1";
+const CACHE_KEY = "monetrix_digest_verified_v2";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 function saveCache(result: DigestResult) {
@@ -255,20 +255,38 @@ export async function getDigest(segment?: string, limit = 6): Promise<DigestResu
   // Try cache first
   const cached = loadCache();
 
-  // Always filter and rank static items
+  // Никогда не показываем встроенные записи, если они устарели.
+  // В финансовом дайджесте лучше показать меньше карточек, чем непроверенный совет.
+  const freshnessWindow = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
   const filtered = STATIC_DIGEST
+    .filter((item) => now - new Date(item.date).getTime() <= freshnessWindow)
     .filter((item) => !item.segment || !segment || item.segment.includes(segment as "solo" | "family" | "entrepreneur"))
     .sort((a, b) => b.priority - a.priority)
     .slice(0, limit);
 
-  // Try to get live rates (non-blocking)
-  let liveRates: LiveRate[] = cached?.liveRates || [];
-  if (!cached) {
-    liveRates = await fetchLiveRates();
-  }
+  // Курсы получаем заново, а не берём устаревшие карточки из сборки.
+  const liveRates = await fetchLiveRates();
+
+  const verifiedItems = filtered.length > 0 ? filtered : liveRates.length > 0 ? [{
+    id: "live-rates",
+    category: "cbr" as const,
+    categoryLabel: "Проверено сейчас",
+    emoji: "",
+    title: "Актуальные курсы валют ЦБ РФ",
+    summary: liveRates.map((rate) => rate.label).join(" · "),
+    impact: "Это рыночные ориентиры на момент проверки. Для решений по вкладам, кредитам и инвестициям сначала откройте официальный источник и проверьте условия.",
+    actionLabel: "Источник ЦБ РФ",
+    actionPath: "https://www.cbr.ru/currency_base/daily/",
+    tagColor: "#3629B7",
+    date: new Date().toISOString().slice(0, 10),
+    source: "cbr.ru",
+    sourceUrl: "https://www.cbr.ru/currency_base/daily/",
+    priority: 10,
+  }] : [];
 
   const result: DigestResult = {
-    items: filtered,
+    items: verifiedItems,
     liveRates,
     generatedAt: new Date().toISOString(),
     fromCache: !!cached,

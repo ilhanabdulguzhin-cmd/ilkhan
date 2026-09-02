@@ -21,6 +21,7 @@ import {
   PiggyBank,
 } from "lucide-react";
 import { MonetrixIcon } from "@/components/monetrix-logo";
+import { createDemoAccount } from "@/lib/user-store";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -340,6 +341,12 @@ export default function AuthPage() {
 
           {mode === "register" && (
             <div className="mt-6 space-y-3">
+              <div className="rounded-xl border border-[#3629B7]/15 bg-[#3629B7]/5 p-4 text-sm text-[#303030]">
+                <p className="font-semibold">Хотите сначала посмотреть продукт?</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8E8E93]">Активируйте демо-аккаунт с готовыми тестовыми данными. Это не реальные деньги и не подключение к банку.</p>
+                <button type="button" onClick={() => { createDemoAccount(); router.push("/dashboard"); }} className="mt-3 text-xs font-semibold text-[#3629B7] hover:underline">Войти в демо-кабинет →</button>
+                <p className="mt-2 font-mono text-[11px] text-[#8E8E93]">demo@monetrix.app · demo123</p>
+              </div>
               <div className="flex items-center gap-2 text-xs text-[#8E8E93]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759]" />
                 Данные хранятся только на вашем устройстве
