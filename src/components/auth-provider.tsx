@@ -67,11 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshAsync();
     const { data } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => { setUserData(toAuthUser(session?.user ?? null)); setLoading(false); void refreshAsync(); });
     return () => data.subscription.unsubscribe();
-  }, [refreshAsync, supabase]);
+  }, [refreshAsync, supabase, toAuthUser]);
   const updateUserData = useCallback((data: AuthUser) => {
     setUserData(data);
-    if (supabase) void supabase.auth.getUser().then(({ data: authData }) => {
-      if (authData.user) void saveRemoteUserData(authData.user.id, data);
+    if (supabase) void supabase.auth.getUser().then((result: { data: { user: User | null } }) => {
+      if (result.data.user) void saveRemoteUserData(result.data.user.id, data);
     });
   }, [supabase]);
   const logout = useCallback(() => { if (supabase) void supabase.auth.signOut(); setUserData(null); }, [supabase]);
