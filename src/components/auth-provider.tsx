@@ -20,8 +20,9 @@ interface AuthContextType {
 }
 const AuthContext = createContext<AuthContextType>({ isAuthenticated: false, userData: null, loading: true, refresh: () => {}, refreshAsync: async () => {}, updateUserData: () => {}, logout: () => {}, isAdmin: false });
 
+const supabase = typeof window !== "undefined" ? createClient() : null;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = typeof window !== "undefined" ? createClient() : null;
   const [userData, setUserData] = useState<AuthUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -50,12 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = await supabase.auth.getUser();
     const baseUser = toAuthUser(data.user);
     if (data.user && baseUser) {
-      const remoteData = await loadRemoteUserData(data.user.id);
+      let remoteData: UserData | null = null;
+      try { remoteData = await loadRemoteUserData(data.user.id); } catch { /* Auth must remain usable when profile storage is unavailable. */ }
       const merged = remoteData ? { ...baseUser, ...remoteData, profile: { ...baseUser.profile, ...remoteData.profile, id: data.user.id, email: data.user.email ?? remoteData.profile.email } } as AuthUser : baseUser;
       setUserData(merged);
-      if (!remoteData) await saveRemoteUserData(data.user.id, merged);
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
-      setIsAdmin(profile?.role === "admin");
+      if (!remoteData) void saveRemoteUserData(data.user.id, merged).catch(() => undefined);
+      try {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+        setIsAdmin(profile?.role === "admin");
+      } catch { setIsAdmin(false); }
     } else {
       setUserData(null);
       setIsAdmin(false);
@@ -65,7 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!supabase) return;
     refreshAsync();
-    const { data } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => { setUserData(toAuthUser(session?.user ?? null)); setLoading(false); void refreshAsync(); });
+    const { data } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      if (!session?.user) { setUserData(null); setIsAdmin(false); setLoading(false); return; }
+      void refreshAsync();
+    });
     return () => data.subscription.unsubscribe();
   }, [refreshAsync, supabase, toAuthUser]);
   const updateUserData = useCallback((data: AuthUser) => {

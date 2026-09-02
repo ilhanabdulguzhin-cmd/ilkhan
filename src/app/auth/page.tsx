@@ -100,7 +100,7 @@ export default function AuthPage() {
           return;
         }
         refresh();
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch {
       setError("Что-то пошло не так. Попробуйте ещё раз.");

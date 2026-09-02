@@ -67,7 +67,7 @@ const navItems = [
 ] as const;
 
 const mobileBottomNav = [
-  { href: "/",              label: "Главная",  icon: LayoutDashboard },
+  { href: "/dashboard",     label: "Кабинет",  icon: LayoutDashboard },
   { href: "/daily-life",    label: "Жизнь",    icon: ShoppingCart },
   { href: "/upload",        label: "Добавить", icon: Plus, isAdd: true },
   { href: "/invest",        label: "Инвест",   icon: TrendingUp },
@@ -87,7 +87,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) router.push("/landing");
+    if (!loading && !isAuthenticated) router.replace("/auth");
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
