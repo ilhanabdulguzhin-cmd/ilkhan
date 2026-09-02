@@ -77,6 +77,8 @@ const mobileBottomNav = [
 export { LIFE_SECTIONS };
 export { AppShell };
 
+export default AppShell;
+
 function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
