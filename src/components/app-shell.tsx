@@ -75,8 +75,9 @@ const mobileBottomNav = [
 ] as const;
 
 export { LIFE_SECTIONS };
+export { AppShell };
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, userData, loading, logout, isAdmin } = useAuth();
