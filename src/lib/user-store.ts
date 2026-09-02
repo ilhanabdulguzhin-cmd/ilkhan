@@ -3,6 +3,7 @@
 "use client";
 
 import { cryptoSet, cryptoGet } from "@/lib/crypto-store";
+import { createClient } from "@/lib/supabase/client";
 
 export type UserSegment = "solo" | "family" | "entrepreneur";
 
@@ -333,7 +334,7 @@ function generateDemoTransactions(): UserTransaction[] {
         date: salaryDate.toISOString().split("T")[0],
         amount: 195000,
         currency: "RUB",
-        description: "Зарплата ООО Техноком",
+        description: "Зарплата ОО�� Техноком",
         merchant: "ООО Техноком",
         category: "Зарплата",
         categoryIcon: "💰",
@@ -474,6 +475,29 @@ export async function getCurrentUserEncrypted(): Promise<UserData | null> {
 export function isLoggedIn(): boolean {
   if (typeof window === "undefined") return false;
   return !!localStorage.getItem(STORAGE_KEY + "_current");
+}
+
+/** Load the authenticated user's financial snapshot from Supabase. */
+export async function loadRemoteUserData(userId: string): Promise<UserData | null> {
+  if (typeof window === "undefined") return null;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("user_financial_snapshots")
+    .select("data")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error || !data?.data) return null;
+  return data.data as UserData;
+}
+
+/** Persist the authenticated user's financial snapshot with RLS-scoped upsert. */
+export async function saveRemoteUserData(userId: string, data: UserData): Promise<void> {
+  if (typeof window === "undefined") return;
+  const supabase = createClient();
+  await supabase.from("user_financial_snapshots").upsert(
+    { user_id: userId, data, updated_at: new Date().toISOString() },
+    { onConflict: "user_id" },
+  );
 }
 
 export function saveUserData(data: UserData): void {

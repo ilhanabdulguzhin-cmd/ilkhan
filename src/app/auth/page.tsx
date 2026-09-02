@@ -33,6 +33,7 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const features = [
     {
@@ -60,6 +61,7 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResetSent(false);
     setLoading(true);
 
     try {
@@ -91,7 +93,12 @@ export default function AuthPage() {
           return;
         }
         const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-        if (authError) { setError("Неверный email или пароль"); setLoading(false); return; }
+        if (authError) {
+          const message = authError.message.toLowerCase();
+          setError(message.includes("confirm") || message.includes("email not confirmed") ? "Подтвердите email по ссылке из письма" : "Неверный email или пароль");
+          setLoading(false);
+          return;
+        }
         refresh();
         router.push("/");
       }
@@ -269,7 +276,25 @@ export default function AuthPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {mode === "login" && (
+                <button
+                  type="button"
+                  className="text-xs text-[#3629B7] hover:underline"
+                  onClick={async () => {
+                    if (!supabase || !email.trim()) { setError("Введите email, чтобы получить ссылку для восстановления"); return; }
+                    setLoading(true);
+                    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/callback?next=/settings` });
+                    setLoading(false);
+                    if (resetError) setError("Не удалось отправить письмо. Проверьте email и попробуйте ещё раз.");
+                    else setResetSent(true);
+                  }}
+                >
+                  Забыли пароль?
+                </button>
+              )}
             </div>
+
+            {resetSent && <p className="text-sm text-[#34C759]">Ссылка для восстановления отправлена на email.</p>}
 
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FF3B30]/10 text-[#FF3B30] text-sm">

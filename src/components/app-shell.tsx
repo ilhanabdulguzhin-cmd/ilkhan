@@ -62,6 +62,7 @@ const navItems = [
   { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
   { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
   { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
+  { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
   { href: "/settings",      label: "Настройки",            icon: Settings,        group: "account" },
 ] as const;
 
@@ -74,8 +75,9 @@ const mobileBottomNav = [
 ] as const;
 
 export { LIFE_SECTIONS };
+export { AppShell };
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, userData, loading, logout, isAdmin } = useAuth();
