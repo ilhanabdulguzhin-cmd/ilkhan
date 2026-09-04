@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { loadRemoteUserData, saveRemoteUserData } from "@/lib/user-store";
+import { loadRemoteUserData, saveRemoteUserData, getCurrentUser, logoutUser } from "@/lib/user-store";
 import type { UserData } from "@/lib/user-store";
 
 type AuthUser = User & UserData;
@@ -47,7 +47,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } as AuthUser;
   }, []);
   const refreshAsync = useCallback(async () => {
-    if (!supabase) return;
+    const localUser = getCurrentUser();
+    if (localUser?.profile.email === "demo@monetrix.app") {
+      setUserData({
+        id: localUser.profile.id,
+        email: localUser.profile.email,
+        user_metadata: { display_name: localUser.profile.name },
+        created_at: localUser.profile.createdAt,
+        app_metadata: {},
+        aud: "authenticated",
+        confirmation_sent_at: undefined,
+        confirmed_at: localUser.profile.createdAt,
+        last_sign_in_at: localUser.profile.createdAt,
+        role: "authenticated",
+        updated_at: localUser.profile.createdAt,
+        profile: localUser.profile,
+        transactions: localUser.transactions,
+        accounts: localUser.accounts,
+        debts: localUser.debts,
+        goals: localUser.goals,
+      } as AuthUser);
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+    if (!supabase) { setUserData(null); setLoading(false); return; }
     const { data } = await supabase.auth.getUser();
     const baseUser = toAuthUser(data.user);
     if (data.user && baseUser) {
@@ -81,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (result.data.user) void saveRemoteUserData(result.data.user.id, data);
     });
   }, [supabase]);
-  const logout = useCallback(() => { if (supabase) void supabase.auth.signOut(); setUserData(null); }, [supabase]);
+  const logout = useCallback(() => { logoutUser(); if (supabase) void supabase.auth.signOut(); setUserData(null); setIsAdmin(false); }, [supabase]);
   return <AuthContext.Provider value={{ isAuthenticated: !!userData, userData, loading, refresh: () => void refreshAsync(), refreshAsync, updateUserData, logout, isAdmin }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { return useContext(AuthContext); }

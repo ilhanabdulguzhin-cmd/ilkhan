@@ -49,7 +49,7 @@ const LIFE_SECTIONS = [
 ] as const;
 
 const navItems = [
-  { href: "/",              label: "Главная",              icon: LayoutDashboard, group: "main" },
+  { href: "/dashboard",     label: "Личный кабинет",      icon: LayoutDashboard, group: "main" },
   { href: "/daily-life",    label: "Бытовая жизнь",        icon: ShoppingCart,    group: "main", color: "#34C759" },
   { href: "/invest",        label: "Инвестиции",           icon: TrendingUp,      group: "main", color: "#007AFF" },
   { href: "/credits",       label: "Кредиты и долги",      icon: CreditCard,      group: "main", color: "#FF9500" },
@@ -59,7 +59,7 @@ const navItems = [
   { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
   { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
   { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
-  { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
+  { href: "/ai-consultant", label: "Monetrix — AI помощник",  icon: Sparkles,        group: "core" },
   { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
   { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
   { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
@@ -109,6 +109,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
   const userName = userData?.profile?.name || "Пользователь";
   const userInitial = userName.charAt(0).toUpperCase();
+  const isDemo = userData?.profile?.email === "demo@monetrix.app";
   const handleLogout = () => { logout(); router.push("/auth"); };
   const currentNav = navItems.find((i) =>
     i.href === "/" ? pathname === "/" : pathname.startsWith(i.href)
@@ -242,12 +243,13 @@ function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               )}
               <h1 className="text-lg font-semibold text-[#303030]">{currentNavLabel}</h1>
+              {isDemo && <span className="rounded-full bg-[#FFF3CD] px-2 py-1 text-[10px] font-semibold text-[#856404]">ДЕМО-ДАННЫЕ</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/ai-consultant" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#3629B7]/8 text-[#3629B7] text-xs font-semibold hover:bg-[#3629B7]/15 transition-colors border border-[#3629B7]/15">
               <Sparkles className="w-3.5 h-3.5" />
-              Спросить Кэшика
+              Спросить Monetrix
             </Link>
             <Link href="/upload" className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3629B7] text-white text-xs font-medium">
               <Plus className="w-3.5 h-3.5" /> Добавить
