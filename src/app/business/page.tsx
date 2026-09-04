@@ -26,7 +26,7 @@ export default function BusinessPage() {
     if (!userData) return;
     const load = async () => {
       const supabase = createClient();
-      const { data } = await supabase.from("businesses").select("id,name,industry").order("created_at", { ascending: false });
+      const { data } = await supabase.from("businesses").select("id,name,industry").eq("owner_id", userData.id).order("created_at", { ascending: false });
       setBusinesses(data ?? []);
     };
     void load();

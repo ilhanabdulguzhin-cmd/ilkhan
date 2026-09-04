@@ -227,8 +227,14 @@ export default function OnboardingPage() {
         <div className="bg-white rounded-2xl border border-[#E5E5EA] shadow-sm overflow-hidden">
           {!isLast && (
             <div className="px-6 pt-5 pb-4 border-b border-[#F5F5F7]">
-              <h2 className="text-xl font-bold text-[#303030]">{cur.title}</h2>
-              {cur.subtitle && <p className="text-sm text-[#8E8E93] mt-0.5">{cur.subtitle}</p>}
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#3629B7]/10 text-[#3629B7]"><Sparkles className="h-4 w-4" /></div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#303030]">{cur.title}</h2>
+                  {cur.subtitle && <p className="mt-0.5 text-sm text-[#8E8E93]">{cur.subtitle}</p>}
+                  <p className="mt-2 text-xs leading-relaxed text-[#8E8E93]">Monetrix ведёт вас шаг за шагом: отвечайте только на текущий вопрос. Можно пропустить необязательное и вернуться позже.</p>
+                </div>
+              </div>
             </div>
           )}
 
