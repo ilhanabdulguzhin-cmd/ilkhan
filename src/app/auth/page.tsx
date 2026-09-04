@@ -73,6 +73,14 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (mode === "login" && normalizedEmail === "demo@monetrix.app" && password === "demo123") {
+        const result = createDemoAccount();
+        if (!result.success) { setError("Не удалось открыть демо-аккаунт. Попробуйте ещё раз."); setLoading(false); return; }
+        refresh();
+        router.replace("/dashboard?demo=1");
+        return;
+      }
       if (!supabase) { setError("Сервис авторизации пока недоступен"); setLoading(false); return; }
       if (mode === "register") {
         if (!name.trim()) {
