@@ -343,7 +343,7 @@ const CONTEXT_PRESETS: Record<string, { scenario: ScenarioId; greeting: string; 
   "fraud-check": { scenario: "general", greeting: "Опишите ситуацию — помогу оценить, является ли это мошенничеством.", quickQ: ["Это законно?", "Признаки пирамиды", "Как проверить брокера?"] },
   fz115:         { scenario: "fz115",   greeting: "Объясню ФЗ-115: почему блокируют счета и как разблокировать.", quickQ: ["Почему заблокировали счёт?", "Документы для разблокировки", "Как оспорить блокировку?"] },
   chargeback:    { scenario: "general", greeting: "Помогу оспорить транзакцию и вернуть деньги.", quickQ: ["Как подать на чарджбек?", "Документы для оспаривания", "Сроки возврата средств"] },
-  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться от страховки?", "Что делают коллекторы законно?"] },
+  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться ��т страховки?", "Что делают коллекторы законно?"] },
   asv:           { scenario: "general", greeting: "Объясню как работает АСВ и страхование вкладов.", quickQ: ["Лимит страховки АСВ", "Что застраховано?", "Что делать при отзыве лицензии?"] },
 };
 
@@ -392,9 +392,9 @@ function AIConsultantInner() {
     let welcome: string;
     if (hasData && inc) {
       const savingsTarget = Math.round(inc * 0.2);
-      welcome = `Привет${name ? `, ${name}` : ""}! Я Кэшик — ваш финансовый советник.${segNote}${contextGreeting}${goalNote}${strategyNote}\n\nВижу ваши данные: доход **${inc.toLocaleString("ru-RU")} ₽/мес**, баланс **${balance.toLocaleString("ru-RU")} ₽**, ${txCount} операций.\n\nЦель — откладывать **${savingsTarget.toLocaleString("ru-RU")} ₽/мес** (20% дохода). Выберите тему или спрашивайте!`;
+      welcome = `Привет${name ? `, ${name}` : ""}! Я Monetrix — ваш финансовый советник.${segNote}${contextGreeting}${goalNote}${strategyNote}\n\nВижу ваши данные: доход **${inc.toLocaleString("ru-RU")} ₽/мес**, баланс **${balance.toLocaleString("ru-RU")} ₽**, ${txCount} операций.\n\nЦель — откладывать **${savingsTarget.toLocaleString("ru-RU")} ₽/мес** (20% дохода). Выберите тему или спрашивайте!`;
     } else {
-      welcome = `Привет${name ? `, ${name}` : ""}! Я Кэшик — финансовый советник.${segNote}${contextGreeting}${goalNote}${strategyNote}\n\nОтвечаю на любые вопросы про деньги, считаю, объясняю, нахожу экономию.\n\n**Примеры запросов:**\n• «ипотека 4 млн на 15 лет под 6%»\n• «вклад 500 000 на 6 месяцев — сколько заработаю?»\n• «как вернуть 52 000 ₽ через ИИС»\n• «лучшая карта для кешбэка на продукты»\n\nВыберите сценарий или пишите — дам конкретные цифры и ссылки.`;
+      welcome = `Привет${name ? `, ${name}` : ""}! Я Monetrix — финансовый советник.${segNote}${contextGreeting}${goalNote}${strategyNote}\n\nОтвечаю на любые вопросы про деньги, считаю, объясняю, нахожу экономию.\n\n**Примеры запросов:**\n• «ипотека 4 млн на 15 лет под 6%»\n• «вклад 500 000 на 6 месяцев — сколько заработаю?»\n• «как вернуть 52 000 ₽ через ИИС»\n• «лучшая карта для кешбэка на продукты»\n\nНачните с шага 1: выберите сценарий. Шаг 2: ответьте на один вопрос. Шаг 3: получите расчёт и один следующий шаг. Если данных не хватает, я прямо скажу, что нужно добавить. Выберите сценарий или пишите — дам конкретные цифры и ссылки.`;
     }
 
     setMessages([{ id: "welcome", role: "assistant", content: welcome }]);
@@ -513,7 +513,7 @@ function AIConsultantInner() {
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-[#303030] leading-none">Кэшик</h2>
+                <h2 className="text-lg font-bold text-[#303030] leading-none">Monetrix</h2>
                 <p className="text-[11px] text-[#8E8E93]">Финансовый советник · считает · экономит · объясняет</p>
               </div>
             </div>
@@ -586,7 +586,7 @@ function AIConsultantInner() {
                   }}
                 />
                 <Input
-                  placeholder="Спросить Кэшика... или используйте 🎤 QR 🧾"
+                  placeholder="Спросить Monetrixа... или используйте 🎤 QR 🧾"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}

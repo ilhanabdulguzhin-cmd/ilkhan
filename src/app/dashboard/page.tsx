@@ -127,7 +127,7 @@ const FINANCE_NEWS = [
     category: "Налоги",
     title: "Вычеты 2025: верните до 64 000 ₽ с ИИС-3 до конца 2028",
     summary: "Лимит соцвычетов повышен до 150 000 ₽ (было 120 000) с 2025 года. Возврат до 19 500 ₽ за лечение/обучение/спорт. ИИС-3: при взносе 400 000 ₽ — возврат до 64 000 ₽ (по новой прогрессивной шкале НДФЛ 13–15% в зависимости от дохода).",
-    impact: "Внесите 400 000 ₽ на ИИС-3 до конца года и верните 52 000–64 000 ₽. Заполнить 3-НДФЛ — 10 минут на nalog.ru. Деньги придут на счёт через 1–4 месяца.",
+    impact: "��несите 400 000 ₽ на ИИС-3 до конца года и верните 52 000–64 000 ₽. Заполнить 3-НДФЛ — 10 минут на nalog.ru. Деньги придут на счёт через 1–4 месяца.",
     tag: "НДФЛ",
     tagColor: "#FF3B30",
     date: "Июль 2026",
@@ -440,6 +440,15 @@ export default function DashboardPage() {
                 <p className="text-sm text-white/60 mb-6 max-w-lg">
                   Загрузите выписку из банка или внесите траты вручную. Мы покажем, куда уходят деньги и где можно сэкономить.
                 </p>
+                <div className="mb-6 grid gap-2 sm:grid-cols-3">
+                  {[['1', 'Добавьте данные', 'Загрузите выписку или внесите одну трату'], ['2', 'Проверьте картину', 'Посмотрите категории и обязательные расходы'], ['3', 'Сделайте шаг', 'Monetrix предложит одно действие на сегодня']].map(([number, title, text]) => (
+                    <div key={number} className="rounded-xl border border-white/15 bg-white/10 p-3">
+                      <div className="text-xs font-bold text-white/70">Шаг {number}</div>
+                      <div className="mt-1 text-sm font-semibold">{title}</div>
+                      <div className="mt-1 text-xs leading-relaxed text-white/60">{text}</div>
+                    </div>
+                  ))}
+                </div>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/upload">
                     <Button className="rounded-xl bg-white text-[#3629B7] hover:bg-white/90 font-semibold shadow-lg">
@@ -1041,7 +1050,7 @@ export default function DashboardPage() {
                   <RefreshCw className={`w-3 h-3 ${digestLoading ? "animate-spin" : ""}`} />
                   Обновить
                 </button>
-                <span className="text-[10px] text-[#8E8E93] bg-[#F5F5F7] px-2 py-1 rounded-full">30 июня 2026</span>
+                <span className="text-[10px] text-[#8E8E93] bg-[#F5F5F7] px-2 py-1 rounded-full">Проверено: {digest ? new Date(digest.generatedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) : "загрузка…"}</span>
               </div>
             </div>
             <p className="text-xs text-[#8E8E93] mt-1">Ключевые события и их практический смысл для вашего кошелька</p>
@@ -1059,7 +1068,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {digest ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              digest.items.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-[#FAFAFA] p-6 text-center">
+                  <p className="text-sm font-semibold text-[#303030]">Проверенных новостей сейчас нет</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[#8E8E93]">Мы не показываем старые или непроверенные советы. Курсы обновляются отдельно из официального источника ЦБ РФ.</p>
+                </div>
+              ) : <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {digest.items.map((n, i) => (
                   <div key={n.id || i} className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E5EA] hover:border-[#D1D1D6] transition-colors space-y-2 flex flex-col">
                     <div className="flex items-center justify-between">
@@ -1099,8 +1113,8 @@ export default function DashboardPage() {
               </div>
             )}
             <p className="text-[10px] text-[#C7C7CC] mt-3 text-center">
-              Источники: cbr.ru, banki.ru, smart-lab.ru, finuslugi.ru, minfin.gov.ru, moex.com, nalog.ru, domrfbank.ru · 30 июня 2026
-              {digest?.liveRates && digest.liveRates.length > 0 && " · Курсы ЦБ РФ в реальном времени"}
+              Источники показываются только для карточек, которые прошли проверку. Последнее обновление: {digest ? new Date(digest.generatedAt).toLocaleString("ru-RU") : "загрузка…"}
+              {digest?.liveRates && digest.liveRates.length > 0 && " · Курсы ЦБ РФ получены при последней проверке"}
             </p>
           </CardContent>
         </Card>
