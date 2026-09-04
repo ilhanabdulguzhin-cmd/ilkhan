@@ -111,9 +111,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const userInitial = userName.charAt(0).toUpperCase();
   const isDemo = userData?.profile?.email === "demo@monetrix.app";
   const handleLogout = () => { logout(); router.push("/auth"); };
-  const currentNav = navItems.find((i) =>
-    i.href === "/" ? pathname === "/" : pathname.startsWith(i.href)
-  );
+  const currentNav = navItems.find((i) => pathname.startsWith(i.href));
   const currentNavLabel = currentNav?.label || "Monetrix";
 
   const groupLabels: Record<string, string> = {
@@ -136,7 +134,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             {collapsed && group !== "main" && <div className="border-t border-white/10 my-2" />}
             <div className="space-y-0.5">
               {items.map((item) => {
-                const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                const isActive = pathname.startsWith(item.href);
                 const accentColor = "color" in item ? item.color : undefined;
                 return (
                   <Link
