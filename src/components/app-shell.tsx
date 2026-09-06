@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { MonetrixIcon } from "@/components/monetrix-logo";
+import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import {
   LayoutDashboard, Upload, UserCircle, Settings, LogOut, Plus,
@@ -59,7 +60,7 @@ const navItems = [
   { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
   { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
   { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
-  { href: "/ai-consultant", label: "Monetrix — AI помощник",  icon: Sparkles,        group: "core" },
+  { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
   { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
   { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
   { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
@@ -168,7 +169,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5F5F7]">
+    <div className="flex min-h-screen bg-[#F5F5F7]">
 
       {/* ── Desktop Sidebar ── */}
       <aside className={cn(
@@ -225,7 +226,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Main ── */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex min-h-screen flex-1 flex-col min-w-0">
         <header className="h-14 md:h-16 border-b border-[#E5E5EA] bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
           <div className="flex items-center gap-3">
             <button className="md:hidden p-2 rounded-lg hover:bg-[#F5F5F7]" onClick={() => setMobileMenuOpen(true)}>
@@ -247,7 +248,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Link href="/ai-consultant" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#3629B7]/8 text-[#3629B7] text-xs font-semibold hover:bg-[#3629B7]/15 transition-colors border border-[#3629B7]/15">
               <Sparkles className="w-3.5 h-3.5" />
-              Спросить Monetrix
+              Спросить Кэшика
             </Link>
             <Link href="/upload" className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3629B7] text-white text-xs font-medium">
               <Plus className="w-3.5 h-3.5" /> Добавить
@@ -260,9 +261,10 @@ function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
-          {children}
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-8">
+          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
         </main>
+        <SiteFooter />
       </div>
 
       {/* ── Mobile drawer ── */}

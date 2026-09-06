@@ -218,23 +218,21 @@ export function createDemoAccount(): { success: boolean; email?: string; error?:
   const demoPassword = "demo123";
   const demoName = "Демо-пользователь";
 
-  // Remove existing demo account if present
   const users = getUsers();
-  if (users[demoEmail]) {
-    delete users[demoEmail];
-    localStorage.removeItem(`${STORAGE_KEY}_${demoEmail}`);
-  }
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
-  // Register demo user
-  const existing = users[demoEmail];
-  if (!existing) {
+  if (!users[demoEmail]) {
     users[demoEmail] = {
       email: demoEmail,
       passwordHash: simpleHash(demoPassword),
       name: demoName,
     };
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  // Do not recreate the snapshot on every demo login: edits must survive refresh and relogin.
+  const existingDemoData = localStorage.getItem(`${STORAGE_KEY}_${demoEmail}`);
+  if (existingDemoData) {
+    localStorage.setItem(STORAGE_KEY + "_current", demoEmail);
+    return { success: true, email: demoEmail };
   }
 
   // Create rich demo data
@@ -430,7 +428,7 @@ export function loginUser(email: string, password: string): { success: boolean; 
   const user = users[normalizedEmail];
 
   if (!user) {
-    return { success: false, error: "Аккаунт не найден. Создайте новый." };
+    return { success: false, error: "Аккаунт не найден. Создайте нов��й." };
   }
   if (user.passwordHash !== simpleHash(password)) {
     return { success: false, error: "Неверный пароль. Попробуйте ещё раз." };
@@ -823,7 +821,7 @@ export function computeInsights(data: UserData): FinancialInsights {
       id: "cash_atm",
       type: "commission",
       title: `Снятие наличных — ${Math.round(cashMonthly).toLocaleString("ru-RU")} ₽/мес`,
-      description: `Платя картой вместо наличных, вы получаете кешбэк (~2%). Это ${Math.round(cashbackLost).toLocaleString("ru-RU")} ₽ упущенной выгоды в месяц.`,
+      description: `Платя картой вместо наличных, в�� получаете кешбэк (~2%). Это ${Math.round(cashbackLost).toLocaleString("ru-RU")} ₽ упущенной выгоды в месяц.`,
       amountMonthly: cashbackLost,
       category: "Комиссии",
       actionLabel: "Подобрать карту",
