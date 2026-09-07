@@ -169,7 +169,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#F5F5F7]">
+    <div className="flex min-h-screen max-w-full overflow-x-hidden bg-[#F5F5F7]">
 
       {/* ── Desktop Sidebar ── */}
       <aside className={cn(

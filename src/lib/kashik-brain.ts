@@ -16,6 +16,14 @@ export interface KashikContext {
   segment?: string;
   name?: string;
   history?: { role: string; content: string }[];
+  preferences?: KashikPreferences;
+}
+
+export interface KashikPreferences {
+  tone: "business" | "friendly" | "brief";
+  detail: "summary" | "standard" | "deep";
+  risk: "careful" | "balanced" | "bold";
+  showCalculations: boolean;
 }
 
 export interface CalcResult {
@@ -594,7 +602,7 @@ mortgage: `**Ипотека в России — актуально март 2026
 ❄️ **Дальневосточная/Арктическая — 2%** (ДФО и Арктика, до 35 лет)
 
 **Рыночная ипотека:** от 19-22% при ключевой ставке 14,5%
-Переплата на 5 млн / 20 лет: **~8-10 млн ₽** (против ~2,5 млн при 6%)
+Переплата на 5 млн / 20 лет: **~8-10 млн ₽** (против ~2,5 млн ��ри 6%)
 
 **Как рассчитать максимальный кредит:**
 Платёж ≤ 40-50% дохода семьи. Доход 150 000/мес → максимальный платёж 60 000-75 000 ₽ → кредит ~6-7 млн под 6%
@@ -862,7 +870,7 @@ family: `**Семейные льготы и маткапитал 2026**
 • Использование: ипотека, образование, пенсия мамы
 
 **Стандартный налоговый вычет для родителей:**
-• 1-й и 2-й ребёнок: 1 400 ₽/мес (уменьшает НДФЛ на 182 ₽/мес)
+• 1-й и 2-й ребёнок: 1 400 ₽/мес (уменьша��т НДФЛ на 182 ₽/мес)
 • 3-й и более: 3 000 ₽/мес
 • Ребёнок-инвалид: 12 000 ₽/мес
 Подайте заявление работодателю — это бесплатно и автоматически
@@ -1467,6 +1475,14 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
   const history = ctx.history || [];
   const name = ctx.name ? ctx.name : "";
   const tone = getConversationTone(history);
+  const preferences = ctx.preferences;
+  const riskLabel = preferences?.risk === "bold" ? "смелый" : preferences?.risk === "balanced" ? "сбалансированный" : "осторожный";
+  const formatAnswer = (response: KashikResponse): KashikResponse => {
+    const tonePrefix = preferences?.tone === "business" ? "Рекомендация по шагам:\n" : preferences?.tone === "brief" ? "Коротко: " : "Разберём спокойно.\n";
+    const riskSuffix = `\n\nПрофиль риска: ${riskLabel}. Решение принимайте после проверки исходных данных и худшего сценария.`;
+    const detailSuffix = preferences?.detail === "deep" ? "\n\nДопущения: расчёт ориентировочный, использует введённые суммы и стандартную формулу; комиссии, налоги и актуальные условия продукта нужно проверить отдельно." : "";
+    return { ...response, text: `${tonePrefix}${response.text}${riskSuffix}${detailSuffix}` };
+  };
   const prevQ = followUpContext(history);
 
   // ── 1. Определяем Intent ──────────────────────────────────────────────────
@@ -1487,12 +1503,12 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
     );
 
   if (hasFreeFormIndicators && freeFormData) {
-    return analyzeFreeFormData(freeFormData, ctx);
+    return formatAnswer(analyzeFreeFormData(freeFormData, ctx));
   }
 
   // ── 3. Персональный анализ ────────────────────────────────────────────────
   if (intent.type === "analyze_me" || intent.type === "analyze_savings") {
-    return { text: personalAnalysis(ctx), tips: getTips(ctx), products: getProducts(ctx, intent.type) };
+    return formatAnswer({ text: personalAnalysis(ctx), tips: getTips(ctx), products: getProducts(ctx, intent.type) });
   }
 
   // ── 4. Калькуляторы ───────────────────────────────────────────────────────
@@ -1537,7 +1553,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       text += `• Сравнение со ставкой 6% (льготная) и 20% (рыночная) — в таблице ниже ↓`;
     }
 
-    return { text, calcResult: calc, products: getProducts(ctx, "mortgage") };
+    return formatAnswer({ text, calcResult: calc, products: getProducts(ctx, "mortgage") });
   }
 
   if (intent.type === "calc_deposit") {
@@ -1556,7 +1572,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       `• Финуслуги.ру — маркетплейс ЦБ, можно найти лучшие ставки\n\n` +
       `⚡ **Важно:** ЦБ снизил ставку до 14,5% 25 апреля 2026. Ставки по вкладам идут вниз. Зафиксируйте на 6-12 мес сейчас — в таблице сравнение по срокам ↓`;
 
-    return { text, calcResult: calc };
+    return formatAnswer({ text, calcResult: calc });
   }
 
   if (intent.type === "calc_iis") {
@@ -1575,7 +1591,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       `5. Через 30-90 дней **${RU(ret)} придут на карту**\n\n` +
       `**Стратегия 3 лет:** взносы каждый год → 3 вычета + рост ОФЗ. Суммарно в таблице ↓`;
 
-    return { text, calcResult: calc };
+    return formatAnswer({ text, calcResult: calc });
   }
 
   if (
@@ -1609,7 +1625,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       `5. Подписать — деньги через 30-90 дней\n\n` +
       (type === "prop" ? `💡 Если покупали в ипотеку — добавьте вычет по процентам: ещё до **390 000 ₽** отдельно!` : `💡 Собирайте все чеки и договоры в одну папку — потребуются при подаче.`);
 
-    return { text, calcResult: calc };
+    return formatAnswer({ text, calcResult: calc });
   }
 
   if (intent.type === "calc_debt") {
@@ -1652,7 +1668,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       (m < 999 && m3 > 0 ? `💡 Если платить **+50% (${RU(pmt150)}/мес)** — закроете за **${m3} мес**, сэкономите ${m - m3} мес и **${RU(totalPaid - total3)}** на процентах.\n\n` : "") +
       `**Рефинансирование выгодно** если другой банк даёт ставку на 2%+ ниже. Смотрите: Т-Банк, Сбербанк, ВТБ.`;
 
-    return { text, calcResult: calc };
+    return formatAnswer({ text, calcResult: calc });
   }
 
   if (intent.type === "calc_budget") {
@@ -1667,7 +1683,7 @@ export function kashikRespond(ctx: KashikContext): KashikResponse {
       `• После подушки → **ИИС** (государство вернёт ${RU(Math.min(52000, Math.round(income * 12 * 0.13)))}/год)\n` +
       `• Подберите **кешбэк-карту** под основные категории трат → +${RU(Math.round(income * 0.025))}/мес пассивно`;
 
-    return { text, calcResult: calc, tips: getTips(ctx) };
+    return formatAnswer({ text, calcResult: calc, tips: getTips(ctx) });
   }
 
   if (intent.type === "calc_pension") {

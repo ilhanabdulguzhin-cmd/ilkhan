@@ -4,12 +4,13 @@ import { kashikRespond } from "@/lib/kashik-brain";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { message, scenario, userContext, history } = body;
+    const { message, scenario, userContext, history, preferences } = body;
 
     const response = kashikRespond({
       message,
       scenario,
       history,
+      preferences,
       ...userContext,
     });
 

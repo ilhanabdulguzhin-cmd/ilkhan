@@ -11,6 +11,7 @@ import { logoutUser } from "@/lib/user-store";
 import { useRouter } from "next/navigation";
 import {
   Shield,
+  SlidersHorizontal,
   Eye,
   Lock,
   Users,
@@ -43,6 +44,9 @@ const defaultConsents: ConsentScope[] = [
 ];
 
 const CONSENTS_KEY = "monetrix_consents";
+const KASHIK_PREFS_KEY = "monetrix_kashik_preferences";
+type KashikPrefs = { tone: "business" | "friendly" | "brief"; detail: "summary" | "standard" | "deep"; risk: "careful" | "balanced" | "bold"; showCalculations: boolean };
+const defaultKashikPrefs: KashikPrefs = { tone: "friendly", detail: "standard", risk: "careful", showCalculations: true };
 
 function loadConsents(): ConsentScope[] {
   if (typeof window === "undefined") return defaultConsents;
@@ -60,10 +64,23 @@ export default function SettingsPage() {
   const { userData, refresh } = useAuth();
   const router = useRouter();
   const [consents, setConsents] = useState<ConsentScope[]>(defaultConsents);
+  const [kashikPrefs, setKashikPrefs] = useState<KashikPrefs>(defaultKashikPrefs);
 
   useEffect(() => {
     setConsents(loadConsents());
+    try {
+      const saved = localStorage.getItem(KASHIK_PREFS_KEY);
+      if (saved) setKashikPrefs({ ...defaultKashikPrefs, ...JSON.parse(saved) });
+    } catch { /* keep safe defaults */ }
   }, []);
+
+  const updateKashikPrefs = (patch: Partial<KashikPrefs>) => {
+    setKashikPrefs((prev) => {
+      const next = { ...prev, ...patch };
+      localStorage.setItem(KASHIK_PREFS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const toggleConsent = (id: string) => {
     setConsents((prev) => {
@@ -264,6 +281,15 @@ export default function SettingsPage() {
 
           {/* Account */}
           <TabsContent value="account" className="mt-4 space-y-4">
+          <Card className="border-[#3629B7]/15">
+            <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><SlidersHorizontal className="h-4 w-4 text-[#3629B7]" />Настройки Кэшика</CardTitle><p className="text-xs leading-relaxed text-[#8E8E93]">Эти параметры влияют на формат ответов, но не меняют финансовые расчёты и не отключают предупреждения о риске.</p></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1.5 text-sm"><span className="font-medium">Тональность</span><select value={kashikPrefs.tone} onChange={(e) => updateKashikPrefs({ tone: e.target.value as KashikPrefs["tone"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="friendly">Дружелюбная</option><option value="business">Деловая</option><option value="brief">Краткая</option></select></label>
+              <label className="grid gap-1.5 text-sm"><span className="font-medium">Детализация</span><select value={kashikPrefs.detail} onChange={(e) => updateKashikPrefs({ detail: e.target.value as KashikPrefs["detail"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="summary">Только вывод</option><option value="standard">Вывод и расчёт</option><option value="deep">Подробно с допущениями</option></select></label>
+              <label className="grid gap-1.5 text-sm sm:col-span-2"><span className="font-medium">Отношение к риску</span><select value={kashikPrefs.risk} onChange={(e) => updateKashikPrefs({ risk: e.target.value as KashikPrefs["risk"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="careful">Осторожное — сначала безопасность и подушка</option><option value="balanced">Сбалансированное — компромисс доходности и риска</option><option value="bold">Смелое — допускаю волатильность, но хочу видеть сценарии</option></select></label>
+              <label className="flex items-center justify-between rounded-lg bg-[#F5F5F7] p-3 text-sm sm:col-span-2"><span><span className="block font-medium">Показывать расчёты</span><span className="block text-xs text-[#8E8E93]">Кэшик будет раскрывать формулу, исходные данные и ограничения.</span></span><Switch checked={kashikPrefs.showCalculations} onCheckedChange={(checked) => updateKashikPrefs({ showCalculations: checked })} /></label>
+            </CardContent>
+          </Card>
             {userData && (
               <Card>
                 <CardContent className="p-5">
@@ -317,7 +343,7 @@ export default function SettingsPage() {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#303030] mb-1">Выйти из аккаунта</p>
                     <p className="text-xs text-[#8E8E93] mb-3">
-                      Ваши данные останутся на устройстве. Вы сможете войти снова.
+                      Ваши данные останутся на устройстве. Вы ��можете войти снова.
                     </p>
                     <Button
                       onClick={() => {
