@@ -5,7 +5,6 @@ import { VisualEditsMessenger } from "orchids-visual-edits";
 import { AuthProvider } from "@/components/auth-provider";
 import { PWARegister } from "@/components/pwa-register";
 import { Analytics } from "@vercel/analytics/next";
-import { SiteFooter } from "@/components/site-footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,10 +48,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
-        <AuthProvider>
-          {children}
-          <SiteFooter />
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
         <PWARegister />
         <VisualEditsMessenger />
       <Analytics />
