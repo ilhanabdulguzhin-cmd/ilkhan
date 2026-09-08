@@ -2,9 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth } from "@/components/auth-provider";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import {
   Shield, Sparkles, Wallet, BarChart3, Lock, CheckCircle2,
   ArrowRight, ChevronRight, Brain, FileSpreadsheet, Target, Medal,
@@ -120,15 +117,6 @@ const TESTIMONIALS = [
 ];
 
 export default function LandingPage() {
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.replace("/dashboard");
-    }
-  }, [isAuthenticated, loading, router]);
-
   return (
     <div className="min-h-screen bg-white font-sans">
 
@@ -186,7 +174,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Monetrix помогает видеть счета, анализировать траты и находить возможности для экономии. Получайте понятные подсказки, сравнивайте сценарии и принимайте решения самостоятельно.
+              Monetrix помогает видеть счета, анализировать траты и находить возможности для экономии. Получайте понятные подсказки, сравнивайте сценарии и принимайте решения самостоятельно. Сначала — открытый обзор возможностей, затем — ваш личный кабинет.
               Данные обрабатываются с учётом настроек приватности и защищаются современными средствами безопасности.
             </p>
 
@@ -208,11 +196,33 @@ export default function LandingPage() {
 
             {/* Trust indicators */}
             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/60">
-              <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[#34C759]" /> AES-256</span>
-              <span className="flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5 text-[#34C759]" /> PWA — работает офлайн</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-[#34C759]" /> Без рекламы</span>
+              <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[#34C759]" /> Шифрование данных</span>
+              <span className="flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5 text-[#34C759]" /> Доступ с телефона</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-[#34C759]" /> Без рекламы и навязанных продуктов</span>
+            </div>
+            <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3">
+              {[
+                ["1 источник правды", "Счета, обязательства и цели собраны в одной картине"],
+                ["Объяснимые советы", "Кэшик показывает расчёт, допущения и уровень риска"],
+                ["Решение за вами", "Платформа помогает сравнить варианты, а не продаёт продукт"],
+              ].map(([title, text]) => (
+                <div key={title} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <p className="font-semibold text-white">{title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/60">{text}</p>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#E5E5EA] bg-[#F5F5F7] py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#34C759]">Статус доверия</p>
+            <p className="mt-1 text-sm font-semibold text-[#303030]">Прозрачные расчёты. Без рекламы. Без продаж финансовых продуктов.</p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-[#8E8E93]"><span className="rounded-full bg-white px-3 py-1.5">Открытая логика</span><span className="rounded-full bg-white px-3 py-1.5">Решение за вами</span><span className="rounded-full bg-white px-3 py-1.5">Можно начать с демо</span></div>
         </div>
       </section>
 
@@ -245,7 +255,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════��══════════════════════════════════
+      {/* ═════════════════════════════════���══��══════════════════════════════════
           HOW IT WORKS
          ════════════════════════════════════════════════════════════════════���═══ */}
       <section id="how" className="py-20 md:py-24 bg-[#F5F5F7]">
