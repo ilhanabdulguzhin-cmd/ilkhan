@@ -324,6 +324,19 @@ export default function AuthPage() {
 
             {resetSent && <p className="text-sm text-[#34C759]">Ссылка для восстановления отправлена на email.</p>}
 
+            {mode === "login" && (
+              <div className="rounded-xl border border-[#3629B7]/15 bg-[#3629B7]/5 p-4 text-sm text-[#303030]">
+                <p className="font-semibold">Быстрый просмотр продукта</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8E8E93]">Это демонстрационный аккаунт с тестовыми данными. Деньги, счета и операции ненастоящие.</p>
+                <div className="mt-3 grid grid-cols-[1fr_auto] gap-2 text-xs">
+                  <code className="rounded-lg bg-white px-2 py-1.5 text-[#303030]">demo@monetrix.app</code>
+                  <button type="button" onClick={() => setEmail("demo@monetrix.app")} className="rounded-lg px-2 text-[#3629B7] hover:bg-white">Вставить</button>
+                  <code className="rounded-lg bg-white px-2 py-1.5 text-[#303030]">demo123</code>
+                  <button type="button" onClick={() => setPassword("demo123")} className="rounded-lg px-2 text-[#3629B7] hover:bg-white">Вставить</button>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-[#FF3B30]/10 text-[#FF3B30] text-sm">
                 <AlertCircle className="w-4 h-4 shrink-0" />

@@ -132,14 +132,14 @@ function buildUserContext(data: UserData | null) {
 
 function CalcCard({ result }: { result: CalcResult }) {
   return (
-    <div className="mt-3 rounded-2xl border border-[#3629B7]/15 overflow-hidden">
+    <div className="mt-3 w-full min-w-0 rounded-2xl border border-[#3629B7]/15 overflow-hidden">
       <div className="px-4 py-2.5 bg-gradient-to-r from-[#3629B7]/10 to-transparent border-b border-[#3629B7]/10 flex items-center gap-2">
         <Zap className="w-3.5 h-3.5 text-[#3629B7]" />
         <p className="text-sm font-bold text-[#3629B7]">{result.title}</p>
       </div>
       <div className="divide-y divide-[#F5F5F7] bg-white">
         {result.rows.map((row, i) => (
-          <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${row.highlight ? "bg-gradient-to-r from-[#3629B7]/5 to-transparent" : ""}`}>
+          <div key={i} className={`flex flex-wrap items-start justify-between gap-x-3 gap-y-1 px-4 py-2.5 ${row.highlight ? "bg-gradient-to-r from-[#3629B7]/5 to-transparent" : ""}`}>
             <span className="text-xs text-[#8E8E93] shrink-0 mr-3 leading-tight">{row.label}</span>
             <div className="text-right">
               <span className={`text-sm ${row.highlight ? "font-black text-[#3629B7] text-base" : "font-semibold text-[#303030]"}`}>{row.value}</span>
@@ -343,7 +343,7 @@ const CONTEXT_PRESETS: Record<string, { scenario: ScenarioId; greeting: string; 
   "fraud-check": { scenario: "general", greeting: "Опишите ситуацию — помогу оценить, является ли это мошенничеством.", quickQ: ["Это законно?", "Признаки пирамиды", "Как проверить брокера?"] },
   fz115:         { scenario: "fz115",   greeting: "Объясню ФЗ-115: почему блокируют счета и как разблокировать.", quickQ: ["Почему заблокировали счёт?", "Документы для разблокировки", "Как оспорить блокировку?"] },
   chargeback:    { scenario: "general", greeting: "Помогу оспорить транзакцию и вернуть деньги.", quickQ: ["Как подать на чарджбек?", "Документы для оспаривания", "Сроки возврата средств"] },
-  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться ��т страховки?", "Что делают коллекторы законно?"] },
+  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться ����т страховки?", "Что делают коллекторы законно?"] },
   asv:           { scenario: "general", greeting: "Объясню как работает АСВ и страхование вкладов.", quickQ: ["Лимит страховки АСВ", "Что застраховано?", "Что делать при отзыве лицензии?"] },
 };
 
@@ -414,10 +414,12 @@ function AIConsultantInner() {
 
     try {
       const userContext = buildUserContext(userData);
+      const savedPrefs = typeof window !== "undefined" ? localStorage.getItem("monetrix_kashik_preferences") : null;
+      const preferences = savedPrefs ? JSON.parse(savedPrefs) : undefined;
       const resp = await fetch("/api/kashik", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, scenario: activeScenario, userContext }),
+        body: JSON.stringify({ message: text, scenario: activeScenario, userContext, preferences }),
       });
 
       const data = await resp.json();
@@ -586,10 +588,10 @@ function AIConsultantInner() {
                   }}
                 />
                 <Input
-                  placeholder="Спросить Monetrixа... или используйте 🎤 QR 🧾"
+                  placeholder="Спросить Кэшика... или используйте 🎤 QR 🧾"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229 && handleSend()}
                   className="flex-1 rounded-xl border-[#E5E5EA] bg-[#F5F5F7] text-sm min-w-0"
                 />
                 <Button onClick={handleSend} className="bg-[#3629B7] hover:bg-[#2a1f8f] rounded-xl shrink-0" disabled={!input.trim() || isTyping}>

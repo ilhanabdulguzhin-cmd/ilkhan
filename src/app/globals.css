@@ -44,6 +44,8 @@
   --color-brand: #3629B7;
   --color-brand-light: #4a3dd4;
   --color-brand-dark: #2a1f8f;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 /* 
@@ -95,8 +97,10 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
 
