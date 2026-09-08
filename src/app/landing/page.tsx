@@ -24,7 +24,7 @@ const FEATURES = [
   {
     icon: LayoutDashboard,
     title: "Финансовая панель",
-    desc: "Все счета, карты, вклады, наличные и брокерские счета — в одном окне. Полная картина ваших финансов в реальном времени.",
+    desc: "Все счета, карты, вклады и наличные — в одном окне. Видите остаток, обязательства и свободный ресурс перед каждым решением.",
     color: "#3629B7",
     link: "/",
     label: "Открыть панель",
@@ -40,7 +40,7 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: "Аналитика и ML-прогнозы",
-    desc: "Категоризирует траты, показывает динамику и помогает сравнить сценарии на основе ваших данных.",
+    desc: "Показывает, что изменилось, почему это важно и какой следующий шаг даст измеримый эффект для бюджета.",
     color: "#FF9500",
     link: "/ai-consultant",
     label: "Попробовать ML",
@@ -72,10 +72,17 @@ const FEATURES = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: "01", title: "Создайте аккаунт", desc: "Имя, email и пароль — 30 секунд. Данные остаются на вашем устройстве.", icon: Shield },
-  { step: "02", title: "Загрузите выписку", desc: "CSV из любого банка. Или добавляйте транзакции вручную — за пару минут.", icon: FileSpreadsheet },
-  { step: "03", title: "Получите понятный анализ", desc: "Система категоризирует траты, находит закономерности и показывает возможные сценарии.", icon: Sparkles },
-  { step: "04", title: "Играйте и достигайте целей", desc: "Финансовый рейтинг, уровни, ачивки за каждое осознанное действие. Деньги — это игра.", icon: Target },
+  { step: "01", title: "Соберите картину", desc: "Добавьте выписку или одну операцию. Сразу увидите остаток, обязательные платежи и доступный резерв.", icon: Shield },
+  { step: "02", title: "Найдите рычаг", desc: "Кэшик объяснит главные отклонения: где ушли деньги, что повторяется и какую статью можно изменить без запретов.", icon: FileSpreadsheet },
+  { step: "03", title: "Сравните варианты", desc: "Проверьте базовый, осторожный и смелый сценарии с расчётом эффекта, рисков и допущений.", icon: Sparkles },
+  { step: "04", title: "Сделайте и проверьте", desc: "Поставьте цель, выполните один шаг и возвращайтесь к факту: что изменилось в бюджете через неделю или месяц.", icon: Target },
+];
+
+const VALUE_LOOP = [
+  { icon: Receipt, title: "Операция", text: "Добавили трату или выписку", result: "Получили чистую картину" },
+  { icon: TrendingDown, title: "Объяснение", text: "Кэшик нашёл отклонение", result: "Поняли причину, а не только сумму" },
+  { icon: Calculator, title: "Расчёт", text: "Сравнили сценарии", result: "Увидели эффект и худший исход" },
+  { icon: CheckCircle2, title: "Действие", text: "Выбрали безопасный шаг", result: "Можете измерить результат" },
 ];
 
 const SERVICES = [
@@ -245,9 +252,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* ════════════════════════════════════��══════════════════════════════════
           HOW IT WORKS
-         ════════════════════════════════════════════════════════════════════════ */}
+         ════════════════════════════════════════════════════════════════════���═══ */}
       <section id="how" className="py-20 md:py-24 bg-[#F5F5F7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
@@ -264,6 +271,26 @@ export default function LandingPage() {
                 <div className="text-[10px] font-black text-[#3629B7] tracking-widest mb-2">{step.step}</div>
                 <h3 className="text-base font-bold text-[#303030] mb-2">{step.title}</h3>
                 <p className="text-sm text-[#8E8E93] leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#E5E5EA] bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-10 max-w-2xl">
+            <span className="mb-3 inline-flex rounded-full bg-[#3629B7]/10 px-3 py-1.5 text-xs font-semibold text-[#3629B7]">Не просто учёт</span>
+            <h2 className="mb-3 text-3xl font-black text-[#303030] sm:text-4xl">Каждое действие возвращает вам контроль</h2>
+            <p className="text-lg leading-relaxed text-[#8E8E93]">Monetrix не превращает управление деньгами в ленту графиков. Вы видите связь между действием и результатом: что изменилось, почему это важно и какой шаг выбрать дальше.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {VALUE_LOOP.map((item, index) => (
+              <div key={item.title} className="relative rounded-2xl border border-[#E5E5EA] bg-[#FAFAFA] p-5">
+                <div className="mb-4 flex items-center justify-between"><item.icon className="h-5 w-5 text-[#3629B7]" /><span className="text-xs font-bold text-[#8E8E93]">0{index + 1}</span></div>
+                <h3 className="mb-1 font-bold text-[#303030]">{item.title}</h3>
+                <p className="mb-3 text-sm text-[#8E8E93]">{item.text}</p>
+                <p className="text-sm font-semibold text-[#3629B7]">{item.result}</p>
               </div>
             ))}
           </div>
