@@ -37,10 +37,10 @@ interface ConsentScope {
 }
 
 const defaultConsents: ConsentScope[] = [
-  { id: "c-1", name: "Банковские операции", description: "Monetrix видит вашу историю покупок и переводов", enabled: true, category: "data" },
-  { id: "c-2", name: "Счета и балансы", description: "Monetrix показывает остатки на ваших счетах", enabled: true, category: "data" },
-  { id: "c-3", name: "Умные подсказки", description: "Мы анализируем ваши данные, чтобы дать полезные советы", enabled: true, category: "ai" },
-  { id: "c-4", name: "Передача эксперту", description: "Вы можете поделиться данными с финансовым экспертом по вашему желанию", enabled: false, category: "sharing" },
+  { id: "c-1", name: "Операции и категории", description: "Используются для истории расходов, категорий и расчётов внутри кабинета.", enabled: true, category: "data" },
+  { id: "c-2", name: "Счета и балансы", description: "Используются для сводного остатка и обязательств. Вы можете отключить доступ.", enabled: true, category: "data" },
+  { id: "c-3", name: "Подсказки Кэшика", description: "Данные используются для объяснений и сценариев. Кэшик не совершает операции.", enabled: true, category: "ai" },
+  { id: "c-4", name: "Передача эксперту", description: "Выключено по умолчанию. Включайте только перед конкретным обращением.", enabled: false, category: "sharing" },
 ];
 
 const CONSENTS_KEY = "monetrix_consents";
@@ -145,19 +145,19 @@ export default function SettingsPage() {
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="w-5 h-5 text-[#34C759] mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-[#303030] mb-2">Как мы храним ваши данные</p>
+                    <p className="text-sm font-semibold text-[#303030] mb-2">Контроль данных</p><p className="mb-3 text-xs leading-relaxed text-[#8E8E93]">Вы выбираете, какие данные использовать. Согласия можно изменить в любой момент, а данные — экспортировать или удалить.</p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-xs text-[#8E8E93]">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759] shrink-0" />
-                        Все данные хранятся только на вашем устройстве
+                        В демо-режиме данные хранятся локально на вашем устройстве
                       </div>
                       <div className="flex items-center gap-2 text-xs text-[#8E8E93]">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759] shrink-0" />
-                        Информация зашифрована — никто кроме вас не получит доступ
+                        Доступ ограничен вашим аккаунтом и настройками согласий
                       </div>
                       <div className="flex items-center gap-2 text-xs text-[#8E8E93]">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759] shrink-0" />
-                        Мы не отправляем данные на серверы и не делимся с кем-либо
+                        Мы не продаём данные и не передаём их экспертам без отдельного согласия
                       </div>
                       <div className="flex items-center gap-2 text-xs text-[#8E8E93]">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759] shrink-0" />
@@ -286,7 +286,7 @@ export default function SettingsPage() {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1.5 text-sm"><span className="font-medium">Тональность</span><select value={kashikPrefs.tone} onChange={(e) => updateKashikPrefs({ tone: e.target.value as KashikPrefs["tone"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="friendly">Дружелюбная</option><option value="business">Деловая</option><option value="brief">Краткая</option></select></label>
               <label className="grid gap-1.5 text-sm"><span className="font-medium">Детализация</span><select value={kashikPrefs.detail} onChange={(e) => updateKashikPrefs({ detail: e.target.value as KashikPrefs["detail"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="summary">Только вывод</option><option value="standard">Вывод и расчёт</option><option value="deep">Подробно с допущениями</option></select></label>
-              <label className="grid gap-1.5 text-sm sm:col-span-2"><span className="font-medium">Отношение к риску</span><select value={kashikPrefs.risk} onChange={(e) => updateKashikPrefs({ risk: e.target.value as KashikPrefs["risk"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="careful">Осторожное — сначала безопасность и подушка</option><option value="balanced">Сбалансированное — компромисс доходности и риска</option><option value="bold">Смелое — допускаю волатильность, но хочу видеть сценарии</option></select></label>
+              <label className="grid gap-1.5 text-sm sm:col-span-2"><span className="font-medium">Отношение к риску</span><select value={kashikPrefs.risk} onChange={(e) => updateKashikPrefs({ risk: e.target.value as KashikPrefs["risk"] })} className="h-10 rounded-lg border border-[#E5E5EA] bg-white px-3"><option value="careful">Осторожное — сначала безопасность и подушка</option><option value="balanced">Сбалансированное — компромисс доходности и риска</option><option value="bold">Смелое — допускаю волатильность, но хочу видеть сцен��рии</option></select></label>
               <label className="flex items-center justify-between rounded-lg bg-[#F5F5F7] p-3 text-sm sm:col-span-2"><span><span className="block font-medium">Показывать расчёты</span><span className="block text-xs text-[#8E8E93]">Кэшик будет раскрывать формулу, исходные данные и ограничения.</span></span><Switch checked={kashikPrefs.showCalculations} onCheckedChange={(checked) => updateKashikPrefs({ showCalculations: checked })} /></label>
             </CardContent>
           </Card>
@@ -343,7 +343,7 @@ export default function SettingsPage() {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#303030] mb-1">Выйти из аккаунта</p>
                     <p className="text-xs text-[#8E8E93] mb-3">
-                      Ваши данные останутся на устройстве. Вы ��можете войти снова.
+                      Ваши данные останутся на устройстве. Вы сможете войти снова.
                     </p>
                     <Button
                       onClick={() => {
