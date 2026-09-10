@@ -314,7 +314,7 @@ function DisclaimerBanner() {
   return (
     <div className="mx-3 mt-2 mb-1 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-[10px] text-amber-800 leading-relaxed">
       <Info className="w-3 h-3 mt-0.5 shrink-0 text-amber-500" />
-      <span className="flex-1">Информация носит образовательный характер. Не является индивидуальной инвестиционной рекомендацией.</span>
+      <span className="flex-1">Информация носит образовательный характер и основана на введённых данных. Проверьте условия у официального поставщика; Кэшик не совершает операции и не заменяет специалиста.</span>
       <button onClick={() => setVisible(false)} className="text-amber-400 hover:text-amber-600 shrink-0">
         <X className="w-3 h-3" />
       </button>
@@ -343,7 +343,7 @@ const CONTEXT_PRESETS: Record<string, { scenario: ScenarioId; greeting: string; 
   "fraud-check": { scenario: "general", greeting: "Опишите ситуацию — помогу оценить, является ли это мошенничеством.", quickQ: ["Это законно?", "Признаки пирамиды", "Как проверить брокера?"] },
   fz115:         { scenario: "fz115",   greeting: "Объясню ФЗ-115: почему блокируют счета и как разблокировать.", quickQ: ["Почему заблокировали счёт?", "Документы для разблокировки", "Как оспорить блокировку?"] },
   chargeback:    { scenario: "general", greeting: "Помогу оспорить транзакцию и вернуть деньги.", quickQ: ["Как подать на чарджбек?", "Документы для оспаривания", "Сроки возврата средств"] },
-  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться ����т страховки?", "Что делают коллекторы законно?"] },
+  "borrower-rights": { scenario: "general", greeting: "Расскажу о правах заёмщика по ФЗ-353.", quickQ: ["Досрочное погашение без штрафа?", "Как отказаться от страховки?", "Что делают коллекторы законно?"] },
   asv:           { scenario: "general", greeting: "Объясню как работает АСВ и страхование вкладов.", quickQ: ["Лимит страховки АСВ", "Что застраховано?", "Что делать при отзыве лицензии?"] },
 };
 

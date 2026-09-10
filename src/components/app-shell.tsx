@@ -261,8 +261,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-8">
-          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+        <main className="flex-1 px-3 py-4 pb-24 sm:px-5 md:px-8 md:py-6 md:pb-8">
+          <div className="mx-auto w-full max-w-[1280px]">{children}</div>
         </main>
         <SiteFooter />
       </div>
