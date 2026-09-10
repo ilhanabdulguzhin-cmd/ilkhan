@@ -161,7 +161,7 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-white/80 mb-8">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Управляйте своими финансами на основе подсказок технологий</span>
+              <span>Финансовый план, который легко поддерживать</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-6">
@@ -199,9 +199,9 @@ export default function LandingPage() {
             </div>
             <div className="mx-auto mt-8 grid max-w-3xl gap-3 text-left sm:grid-cols-3">
               {[
-                ["1 источник правды", "Счета, обязательства и цели собраны в одной картине"],
-                ["Объяснимые советы", "Кэшик показывает расчёт, допущения и уровень риска"],
-                ["Решение за вами", "Платформа помогает сравнить варианты, а не продаёт продукт"],
+                ["Понятный обзор", "Доходы, расходы и обязательства собраны в одном месте."],
+                ["Обоснованные подсказки", "Кэшик показывает расчёт и объясняет, на чём основан вывод."],
+                ["Контроль данных", "Вы сами выбираете, какие данные добавить и как их использовать."],
               ].map(([title, text]) => (
                 <div key={title} className="rounded-2xl border border-white/15 bg-white/10 p-4">
                   <p className="font-semibold text-white">{title}</p>
@@ -216,10 +216,10 @@ export default function LandingPage() {
       <section className="border-b border-[#E5E5EA] bg-[#F5F5F7] py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#34C759]">Статус доверия</p>
-            <p className="mt-1 text-sm font-semibold text-[#303030]">Прозрачные расчёты. Без рекламы. Без продаж финансовых продуктов.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#34C759]">Как работает сервис</p>
+            <p className="mt-1 text-sm font-semibold text-[#303030]">Показываем расчёты и источники данных. Финальное решение всегда остаётся за вами.</p>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs text-[#8E8E93]"><span className="rounded-full bg-white px-3 py-1.5">Открытая логика</span><span className="rounded-full bg-white px-3 py-1.5">Решение за вами</span><span className="rounded-full bg-white px-3 py-1.5">Можно начать с демо</span></div>
+          <div className="flex flex-wrap gap-2 text-xs text-[#8E8E93]"><span className="rounded-full bg-white px-3 py-1.5">Понятные расчёты</span><span className="rounded-full bg-white px-3 py-1.5">Без навязанных продуктов</span><span className="rounded-full bg-white px-3 py-1.5">Контроль доступа</span></div>
         </div>
       </section>
 
@@ -227,9 +227,9 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              ["Обзор", "Остаток, доходы, расходы и ближайшие обязательства — без лишних деталей."],
-              ["Разбор", "Причины изменений, расчёты, допущения и уровень риска по каждому совету."],
-              ["Игра", "Цели, серии действий и прогресс, чтобы полезные решения стали привычкой."],
+              ["Обзор", "Главные цифры, ближайшие платежи и состояние бюджета — без перегрузки."],
+              ["Разбор", "Причины изменений, расчёт эффекта и ограничения каждого предложения."],
+              ["Цели", "Планируйте шаги и отслеживайте прогресс, чтобы финансовые решения давали результат."],
             ].map(([title, text]) => <div key={title} className="rounded-2xl border border-[#E5E5EA] bg-[#FAFAFA] p-5"><p className="mb-2 text-lg font-bold text-[#303030]">{title}</p><p className="text-sm leading-relaxed text-[#8E8E93]">{text}</p></div>)}
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FEATURES SECTION
-         ═══════════════════════════════════════════════════════════════════════ */}
+         ════════���══════════════════════════════════════════════════════════════ */}
       <section id="features" className="py-20 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
@@ -451,11 +451,11 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               {[
-                { icon: Lock, text: "AES-256-шифрование" },
-                { icon: Shield, text: "На вашем устройстве" },
-                { icon: CheckCircle2, text: "Без рекламы" },
-                { icon: Globe, text: "Работает офлайн" },
-                { icon: Smartphone, text: "PWA — установка на экран" },
+{ icon: Lock, text: "Защита доступа" },
+  { icon: Shield, text: "Настройки приватности" },
+  { icon: CheckCircle2, text: "Без навязанных продуктов" },
+  { icon: Globe, text: "История решений" },
+  { icon: Smartphone, text: "Удобно на телефоне" },
               ].map((item) => (
                 <span key={item.text} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E5E5EA] text-sm text-[#303030]">
                   <item.icon className="w-3.5 h-3.5 text-[#34C759]" /> {item.text}
@@ -499,8 +499,7 @@ export default function LandingPage() {
           </div>
           <h2 className="text-3xl sm:text-4xl font-black mb-4">Готовы начать?</h2>
           <p className="text-white/70 text-lg mb-10 max-w-xl mx-auto">
-            Бесплатно, без рекламы. AI-советник, ML-прогнозы, геймификация,
-            кэшбэк и управление для бизнеса в одном приложении.
+Начните с базового обзора бюджета. Затем добавляйте только те инструменты, которые нужны именно вам.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
             <Link href="/auth">
