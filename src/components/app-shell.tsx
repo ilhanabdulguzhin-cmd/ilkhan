@@ -12,11 +12,10 @@ import {
   LayoutDashboard, Upload, UserCircle, Settings, LogOut, Plus,
   Menu, X, ChevronLeft, ChevronRight, Sparkles,
   ShoppingCart, TrendingUp, CreditCard, ShieldAlert,
-  ShoppingBag, Receipt, Link2,
+  ShoppingBag, Receipt, Link2, Target, CircleHelp,
 } from "lucide-react";
 
-// ── Navigation Architecture ────────────────────────────────────────────────────
-// Web 4.0 structure: 4 life-domains + core utility sections
+// Навигация повторяет ключевой путь продукта: обзор → сценарии → инструменты → план → обучение.
 
 const LIFE_SECTIONS = [
   {
@@ -50,24 +49,23 @@ const LIFE_SECTIONS = [
 ] as const;
 
 const navItems = [
-  { href: "/dashboard",     label: "Обзор",                 icon: LayoutDashboard, group: "main" },
-  { href: "/upload",        label: "Добавить данные",       icon: Upload,          group: "main" },
-  { href: "/transactions",  label: "Операции",              icon: Receipt,         group: "main" },
-  { href: "/integrations",  label: "Источники денег",        icon: Link2,           group: "main" },
-  { href: "/products",      label: "Инструменты",            icon: ShoppingBag,     group: "planning" },
-  { href: "/daily-life",    label: "Цели и расходы",         icon: ShoppingCart,    group: "planning", color: "#34C759" },
-  { href: "/invest",        label: "Накопления",              icon: TrendingUp,      group: "planning", color: "#007AFF" },
-  { href: "/credits",       label: "Долги",                   icon: CreditCard,      group: "planning", color: "#FF9500" },
-  { href: "/avatar",        label: "Профиль",                 icon: UserCircle,      group: "account" },
-  { href: "/settings",      label: "Настройки",               icon: Settings,        group: "account" },
+  { href: "/dashboard", label: "Обзор", icon: LayoutDashboard, group: "main" },
+  { href: "/what-if", label: "Что если", icon: ShieldAlert, group: "main" },
+  { href: "/products", label: "Инструменты", icon: ShoppingBag, group: "main" },
+  { href: "/plan", label: "Мой план", icon: Target, group: "main" },
+  { href: "/learn", label: "Разобраться", icon: CircleHelp, group: "main" },
+  { href: "/upload", label: "Добавить данные", icon: Upload, group: "account" },
+  { href: "/integrations", label: "Источники денег", icon: Link2, group: "account" },
+  { href: "/avatar", label: "Профиль", icon: UserCircle, group: "account" },
+  { href: "/settings", label: "Настройки", icon: Settings, group: "account" },
 ] as const;
 
 const mobileBottomNav = [
-  { href: "/dashboard",     label: "Кабинет",  icon: LayoutDashboard },
-  { href: "/daily-life",    label: "Жизнь",    icon: ShoppingCart },
-  { href: "/upload",        label: "Добавить", icon: Plus, isAdd: true },
-  { href: "/invest",        label: "Инвест",   icon: TrendingUp },
-  { href: "/ai-consultant", label: "Кэшик",    icon: Sparkles },
+  { href: "/dashboard", label: "Обзор", icon: LayoutDashboard },
+  { href: "/what-if", label: "Что если", icon: ShieldAlert },
+  { href: "/upload", label: "Добавить", icon: Plus, isAdd: true },
+  { href: "/plan", label: "Мой план", icon: Target },
+  { href: "/learn", label: "Разобраться", icon: CircleHelp },
 ] as const;
 
 export { LIFE_SECTIONS };
@@ -118,7 +116,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
   const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <nav className="flex-1 py-2 px-2 overflow-y-auto">
-      {(["main", "core", "account"] as const).map((group) => {
+      {(["main", "account"] as const).map((group) => {
         const items = navItems.filter((i) => i.group === group);
         return (
           <div key={group} className="mb-3">
@@ -147,7 +145,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     <item.icon
                       className="w-4.5 h-4.5 shrink-0 w-[18px] h-[18px]"
-                      style={isActive && accentColor ? { color: "white" } : accentColor ? { color: accentColor } : {}}
+                      style={isActive ? { color: "white" } : accentColor ? { color: String(accentColor) } : undefined}
                     />
                     {!collapsed && <span className="truncate">{item.label}</span>}
                     {!collapsed && isActive && (
@@ -243,7 +241,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Link href="/ai-consultant" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#3629B7]/8 text-[#3629B7] text-xs font-semibold hover:bg-[#3629B7]/15 transition-colors border border-[#3629B7]/15">
               <Sparkles className="w-3.5 h-3.5" />
-              Спросить Кэшика
+              Помощь по расчёту
             </Link>
             <Link href="/upload" className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3629B7] text-white text-xs font-medium">
               <Plus className="w-3.5 h-3.5" /> Добавить
