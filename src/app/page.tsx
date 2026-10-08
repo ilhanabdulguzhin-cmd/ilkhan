@@ -28,7 +28,7 @@ const FEATURES = [
   },
   {
     icon: Brain,
-    title: "AI-советник Кэшик",
+    title: "Понятные подсказки",
     desc: "ИИ анализирует введённые данные, показывает сценарии и предлагает рекомендации. Решения и операции всегда остаются за вами.",
     color: "#007AFF",
     link: "/ai-consultant",
@@ -36,7 +36,7 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: "Аналитика и ML-прогнозы",
+    title: "Разбор расходов",
     desc: "Показывает, что изменилось, почему это важно и какой шаг даст измеримый эффект по вашим данным.",
     color: "#FF9500",
     link: "/ai-consultant",
@@ -44,7 +44,7 @@ const FEATURES = [
   },
   {
     icon: Medal,
-    title: "Игровой режим",
+    title: "Цели и план",
     desc: "Цели, серии полезных действий и прогресс помогают закрепить привычку — без соревнования и стыда за ошибки.",
     color: "#34C759",
     link: "/avatar",
@@ -161,18 +161,17 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-white/80 mb-8">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Финансовый план, который легко поддерживать</span>
+              <span>Разберитесь в своих финансах</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-6">
-              Понимайте свои деньги.
+              Разберитесь в своих финансах
               <br />
-              <span className="relative">Принимайте решения увереннее.</span>
+              <span className="relative">и принимайте решения спокойнее.</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Monetrix собирает ваши финансовые данные в понятную картину: доходы, расходы, обязательства и цели. Вы получаете расчёт, объяснение и следующий шаг — без давления и обещаний лёгкой прибыли.
-              Начните с обзора возможностей, а затем решите, какие данные добавить в личный кабинет.
+              Monetrix собирает доходы, расходы и обязательные платежи в одном месте. Вы понимаете, сколько денег есть сейчас, что будет дальше и какой шаг имеет смысл сделать.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
@@ -437,7 +436,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECURITY
-         ═══════════════════════════════════════════════════════════════════════ */}
+         ═════════════════════════════════════��═════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-[#F5F5F7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mx-auto text-center">

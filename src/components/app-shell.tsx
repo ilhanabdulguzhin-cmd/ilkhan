@@ -42,7 +42,7 @@ const LIFE_SECTIONS = [
   },
   {
     href: "/fraud",
-    label: "Защита и комплаенс",
+    label: "Безопасность",
     icon: ShieldAlert,
     color: "#FF3B30",
     desc: "Мошенничество, ФЗ-115, гайды",
@@ -54,13 +54,13 @@ const navItems = [
   { href: "/daily-life",    label: "Бытовая жизнь",        icon: ShoppingCart,    group: "main", color: "#34C759" },
   { href: "/invest",        label: "Инвестиции",           icon: TrendingUp,      group: "main", color: "#007AFF" },
   { href: "/credits",       label: "Кредиты и долги",      icon: CreditCard,      group: "main", color: "#FF9500" },
-  { href: "/fraud",         label: "Защита и комплаенс",   icon: ShieldAlert,     group: "main", color: "#FF3B30" },
+  { href: "/fraud",         label: "Безопасность",   icon: ShieldAlert,     group: "main", color: "#FF3B30" },
   { href: "/upload",        label: "Загрузка данных",      icon: Upload,          group: "core" },
   { href: "/products",      label: "Банковские продукты",  icon: ShoppingBag,     group: "core" },
   { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
   { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
   { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
-  { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
+  { href: "/ai-consultant", label: "Помощник",  icon: Sparkles,        group: "core" },
   { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
   { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
   { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
@@ -116,9 +116,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const currentNavLabel = currentNav?.label || "Monetrix";
 
   const groupLabels: Record<string, string> = {
-    main: "Жизненные разделы",
-    core: "Инструменты",
-    account: "Аккаунт",
+    main: "Главное",
+    core: "Разделы",
+    account: "Профиль",
   };
 
   const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
