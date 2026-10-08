@@ -6,14 +6,13 @@ import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
-  Shield, Sparkles, Wallet, BarChart3, Lock, CheckCircle2,
-  ArrowRight, ChevronRight, Brain, FileSpreadsheet, Target, Medal,
+  Shield, Sparkles, BarChart3, Lock, CheckCircle2,
+  ArrowRight, ChevronRight, Brain, FileSpreadsheet, Target,
   Receipt, Calculator, MessageCircle, Star, TrendingUp,
   Globe, Building2, Gift, ExternalLink,
   PiggyBank, Users, TrendingDown,
-  Activity, DollarSign, Home, Briefcase,
-  RefreshCw, LayoutDashboard, Settings, Smartphone,
-  LineChart, CreditCard,
+  Home, Smartphone, LayoutDashboard,
+  CreditCard,
 } from "lucide-react";
 import { MonetrixIcon } from "@/components/monetrix-logo";
 import { PWAInstallButton } from "@/components/pwa-install-button";
@@ -23,51 +22,51 @@ import { PWAInstallButton } from "@/components/pwa-install-button";
 const FEATURES = [
   {
     icon: LayoutDashboard,
-    title: "Финансовая панель",
-    desc: "Все счета, карты, вклады и наличные — в одном окне. Видите остаток, обязательства и свободный ресурс перед каждым решением.",
+    title: "Общая картина",
+    desc: "Счета, доходы, расходы и обязательства в одном спокойном обзоре.",
     color: "#3629B7",
-    link: "/",
-    label: "Открыть панель",
-  },
-  {
-    icon: Brain,
-    title: "Понятные подсказки",
-    desc: "Сервис показывает, что происходит с деньгами, и объясняет следующий шаг простыми словами.",
-    color: "#007AFF",
-    link: "/ai-consultant",
-    label: "Получить подсказку",
+    link: "/dashboard",
+    label: "Открыть обзор",
   },
   {
     icon: BarChart3,
-    title: "Разбор расходов",
-    desc: "Видите, куда уходят деньги, какие платежи повторяются и что можно изменить без жёстких ограничений.",
-    color: "#FF9500",
-    link: "/transactions",
-    label: "Посмотреть расходы",
+    title: "Что будет дальше",
+    desc: "Проверьте, хватит ли денег, если доход изменится или появится крупная трата.",
+    color: "#007AFF",
+    link: "/dashboard",
+    label: "Проверить сценарий",
   },
   {
     icon: Target,
-    title: "Цели и план",
-    desc: "Поставьте цель, выберите посильный шаг и следите за результатом. Без рейтингов и лишнего давления.",
+    title: "План без догадок",
+    desc: "Распределяйте доступные деньги по целям и сохраняйте понятные варианты.",
     color: "#34C759",
-    link: "/avatar",
-    label: "Поставить цель",
+    link: "/dashboard",
+    label: "Собрать план",
   },
   {
-    icon: Building2,
-    title: "Финансы для бизнеса",
-    desc: "Для юрлиц и ИП: кассы, налоги, кэшбэк на бизнес-траты, подписки сотрудников. Всё в одном приложении.",
-    color: "#FF3B30",
-    link: "/products",
-    label: "Для бизнеса",
+    icon: FileSpreadsheet,
+    title: "Свои данные",
+    desc: "Добавьте счёт вручную или загрузите выписку с предпросмотром до импорта.",
+    color: "#FF9500",
+    link: "/upload",
+    label: "Добавить данные",
   },
   {
     icon: Shield,
-    title: "Безопасность и 115-ФЗ",
-    desc: "Риск-анализ счёта, защита от мошенников, проверка на фишинг. Данные зашифрованы на вашем устройстве (AES-256).",
+    title: "Без лишнего риска",
+    desc: "Каждый расчёт показывает исходные данные, допущения и ограничения.",
+    color: "#5AC8FA",
+    link: "/dashboard",
+    label: "Посмотреть пример",
+  },
+  {
+    icon: PiggyBank,
+    title: "Понять инструменты",
+    desc: "Короткие кейсы объясняют вклады, резерв и другие решения на простых примерах.",
     color: "#AF52DE",
-    link: "/fraud",
-    label: "Проверить",
+    link: "/products",
+    label: "Разобраться",
   },
 ];
 
@@ -140,7 +139,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white font-sans">
 
 
-      {/* ══════════════════��════════════════════════════════════════════════════
+      {/* ══════════════════��════════════════════════════════���═══════════════════
           NAVBAR
          ═══════════════════════════════════════════════════════════════════════ */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E5E5EA]">
@@ -190,7 +189,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Monetrix собирает доходы, расходы и обязательные платежи в одном месте. Вы понимаете, сколько денег есть сейчас, что будет дальше и какой шаг имеет смысл сделать.
+              Соберите доходы, расходы и обязательные платежи в одном месте. Поймите, сколько денег доступно сейчас, что будет дальше и какой шаг сделать первым.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
@@ -248,7 +247,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════��══════════════════════════════════
+      {/* ════════════════════════════════════��═════════���════════════════════════
           HOW IT WORKS
          ════════════════════════════════════════════════════════════════════���═══ */}
       <section id="how" className="py-20 md:py-24 bg-[#F5F5F7]">

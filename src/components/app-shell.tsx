@@ -12,7 +12,7 @@ import {
   LayoutDashboard, Upload, UserCircle, Settings, LogOut, Plus,
   Menu, X, ChevronLeft, ChevronRight, Sparkles,
   ShoppingCart, TrendingUp, CreditCard, ShieldAlert,
-  ShoppingBag, Receipt, Link2, Calculator, Users,
+  ShoppingBag, Receipt, Link2,
 } from "lucide-react";
 
 // ── Navigation Architecture ────────────────────────────────────────────────────
@@ -50,21 +50,16 @@ const LIFE_SECTIONS = [
 ] as const;
 
 const navItems = [
-  { href: "/dashboard",     label: "Личный кабинет",      icon: LayoutDashboard, group: "main" },
-  { href: "/daily-life",    label: "Бытовая жизнь",        icon: ShoppingCart,    group: "main", color: "#34C759" },
-  { href: "/invest",        label: "Инвестиции",           icon: TrendingUp,      group: "main", color: "#007AFF" },
-  { href: "/credits",       label: "Кредиты и долги",      icon: CreditCard,      group: "main", color: "#FF9500" },
-  { href: "/fraud",         label: "Безопасность",   icon: ShieldAlert,     group: "main", color: "#FF3B30" },
-  { href: "/upload",        label: "Загрузка данных",      icon: Upload,          group: "core" },
-  { href: "/products",      label: "Банковские продукты",  icon: ShoppingBag,     group: "core" },
-  { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
-  { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
-  { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
-  { href: "/ai-consultant", label: "Помощник",  icon: Sparkles,        group: "core" },
-  { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
-  { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
-  { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
-  { href: "/settings",      label: "Настройки",            icon: Settings,        group: "account" },
+  { href: "/dashboard",     label: "Обзор",                 icon: LayoutDashboard, group: "main" },
+  { href: "/upload",        label: "Добавить данные",       icon: Upload,          group: "main" },
+  { href: "/transactions",  label: "Операции",              icon: Receipt,         group: "main" },
+  { href: "/integrations",  label: "Источники денег",        icon: Link2,           group: "main" },
+  { href: "/products",      label: "Инструменты",            icon: ShoppingBag,     group: "planning" },
+  { href: "/daily-life",    label: "Цели и расходы",         icon: ShoppingCart,    group: "planning", color: "#34C759" },
+  { href: "/invest",        label: "Накопления",              icon: TrendingUp,      group: "planning", color: "#007AFF" },
+  { href: "/credits",       label: "Долги",                   icon: CreditCard,      group: "planning", color: "#FF9500" },
+  { href: "/avatar",        label: "Профиль",                 icon: UserCircle,      group: "account" },
+  { href: "/settings",      label: "Настройки",               icon: Settings,        group: "account" },
 ] as const;
 
 const mobileBottomNav = [
@@ -116,9 +111,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const currentNavLabel = currentNav?.label || "Monetrix";
 
   const groupLabels: Record<string, string> = {
-    main: "Главное",
-    core: "Разделы",
-    account: "Профиль",
+    main: "Мои деньги",
+    planning: "План",
+    account: "Аккаунт",
   };
 
   const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
@@ -298,7 +293,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <nav className="flex-1 py-2 px-2">
-              {(["main", "core", "account"] as const).map((group) => {
+{(["main", "planning", "account"] as const).map((group) => {
                 const items = navItems.filter((i) => i.group === group);
                 return (
                   <div key={group} className="mb-3">
