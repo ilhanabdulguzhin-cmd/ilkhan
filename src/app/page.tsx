@@ -437,7 +437,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECURITY
-         ═══════════════════════════════════════════════════════════════════════ */}
+         ═════════════════════════════════════��═════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-[#F5F5F7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mx-auto text-center">
@@ -446,7 +446,7 @@ export default function LandingPage() {
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#303030] mb-4">Данные остаются у вас</h2>
             <p className="text-[#8E8E93] text-lg mb-8 max-w-xl mx-auto">
-              Ш��фрование AES-256, хранение в браузере. Monetrix не получает ваши данные.
+              Шифрование AES-256, хранение в браузере. Monetrix не получает ваши данные.
               Нет серверов — нечего взламывать.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
@@ -554,7 +554,7 @@ export default function LandingPage() {
                   <p className="text-[9px] text-[#3B82F6] font-semibold">Фонд содействия инновациям · Программа «Студенческий стартап»</p>
                   <p className="text-[10px] text-[#4B5563] leading-relaxed pt-1 border-t border-[#D6E4FF]">
                     Проект реализован при поддержке Фонда содействия инновациям в рамках программы
-                    «Студенческий ��тартап» мероприятия «Платформа университетского технологического
+                    «Студенческий стартап» мероприятия «Платформа университетского технологического
                     предпринимательства» федерального проекта «Технологии»
                   </p>
                 </div>

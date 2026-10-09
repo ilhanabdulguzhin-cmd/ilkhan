@@ -50,7 +50,7 @@ const LIFE_SECTIONS = [
 ] as const;
 
 const navItems = [
-  { href: "/dashboard",     label: "Личный кабинет",      icon: LayoutDashboard, group: "main" },
+  { href: "/dashboard",     label: "Обзор денег",          icon: LayoutDashboard, group: "main" },
   { href: "/daily-life",    label: "Бытовая жизнь",        icon: ShoppingCart,    group: "main", color: "#34C759" },
   { href: "/invest",        label: "Инвестиции",           icon: TrendingUp,      group: "main", color: "#007AFF" },
   { href: "/credits",       label: "Кредиты и долги",      icon: CreditCard,      group: "main", color: "#FF9500" },
@@ -60,7 +60,8 @@ const navItems = [
   { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
   { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
   { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
-  { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
+  { href: "/learning",      label: "Разобраться",           icon: Sparkles,        group: "core" },
+  { href: "/ai-consultant", label: "Что если и прогнозы",   icon: Sparkles,        group: "core" },
   { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
   { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
   { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
