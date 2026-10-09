@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAuth } from "@/components/auth-provider";
+import type { UserData } from "@/lib/user-store";
 import {
   ArrowRight,
   CalendarDays,
@@ -28,14 +30,36 @@ const goals = [
 
 type Tab = "overview" | "whatif" | "tools" | "plan" | "learn";
 
+type FinancialSnapshot = {
+  available: number;
+  savings: number;
+  investments: number;
+  debt: number;
+  fixedExpenses: number;
+  income: number;
+  accounts: UserData["accounts"];
+};
+
+function getFinancialSnapshot(data: UserData | null): FinancialSnapshot {
+  const accounts = data?.accounts ?? [];
+  const available = accounts.filter((account) => account.type !== "broker").reduce((sum, account) => sum + account.balance, 0) || 200000;
+  const investments = accounts.filter((account) => account.type === "broker").reduce((sum, account) => sum + account.balance, 0) || 200000;
+  const debt = data?.debts?.reduce((sum, item) => sum + item.balance, 0) || 120000;
+  const fixedExpenses = (data?.profile?.monthlyRent ?? 0) + (data?.profile?.monthlyFood ?? 0) + (data?.profile?.monthlyTransport ?? 0) + (data?.profile?.monthlyUtilities ?? 0) + (data?.profile?.monthlyCredit ?? 0) || 70662;
+  return { available, savings: accounts.filter((account) => account.type === "bank").reduce((sum, account) => sum + account.balance, 0) || 50000, investments, debt, fixedExpenses, income: data?.profile?.monthlyIncome ?? 0, accounts };
+}
+
 export default function DashboardPage() {
+  const { userData } = useAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [months, setMonths] = useState(3);
   const [optional, setOptional] = useState(20000);
   const [saved, setSaved] = useState(false);
-  const available = 200000;
-  const monthly = 60000 + 10662 + optional;
-  const result = useMemo(() => available - monthly * months, [monthly, months]);
+  const snapshot = userData ?? null;
+  const derived = useMemo(() => getFinancialSnapshot(snapshot), [snapshot]);
+  const available = derived.available;
+  const monthly = derived.fixedExpenses + optional;
+  const result = useMemo(() => available - monthly * months, [available, monthly, months]);
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Обзор" }, { id: "whatif", label: "Что если" },
     { id: "tools", label: "Инструменты" }, { id: "plan", label: "Мой план" }, { id: "learn", label: "Разобраться" },
@@ -49,7 +73,7 @@ export default function DashboardPage() {
     <nav className="flex gap-1 overflow-x-auto rounded-xl border border-[#E5E5EA] bg-white p-1" aria-label="Разделы">
       {tabs.map((item) => <button key={item.id} onClick={() => setTab(item.id)} className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ${tab === item.id ? "bg-[#3629B7] text-white" : "text-[#8E8E93] hover:bg-[#F5F5F7]"}`}>{item.label}</button>)}
     </nav>
-    {tab === "overview" && <Overview available={available} />}
+    {tab === "overview" && <Overview snapshot={derived} />}
     {tab === "whatif" && <WhatIf months={months} setMonths={setMonths} optional={optional} setOptional={setOptional} result={result} saved={saved} setSaved={setSaved} />}
     {tab === "tools" && <Tools />}
     {tab === "plan" && <Plan />}
@@ -57,12 +81,12 @@ export default function DashboardPage() {
   </div>;
 }
 
-function Overview({ available }: { available: number }) {
-  const reserve = Math.floor(available / 70662);
+function Overview({ snapshot }: { snapshot: FinancialSnapshot }) {
+  const reserve = Math.floor(snapshot.available / snapshot.fixedExpenses);
   return <>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Metric icon={Wallet} label="Доступно сейчас" value={money.format(available)} hint="Деньги без продажи активов" /><Metric icon={PiggyBank} label="Сбережения с ограничениями" value={money.format(50000)} hint="Доступность зависит от условий" /><Metric icon={TrendingUp} label="Стоимость инвестиций" value={money.format(200000)} hint="Цена портфеля на 6 октября" /><Metric icon={CreditCard} label="Остаток долгов" value={money.format(120000)} hint="Платёж в этом месяце: 10 662 ₽" /></div>
-    <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]"><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5 md:p-6"><h2 className="text-lg font-bold text-[#303030]">Источники денег</h2><p className="mt-1 text-sm text-[#8E8E93]">Последнее обновление показано рядом с суммой.</p><div className="mt-5 divide-y divide-[#F0F0F2]">{accounts.map((account) => <div key={account.name} className="flex items-center justify-between gap-4 py-4 first:pt-0"><div className="flex items-center gap-3"><div className="rounded-xl bg-[#F0EEFF] p-2.5 text-[#3629B7]"><Landmark className="h-5 w-5" /></div><div><p className="text-sm font-semibold text-[#303030]">{account.name}</p><p className="text-xs text-[#8E8E93]">{account.source} · обновлено {account.updated}</p></div></div><p className="text-sm font-bold text-[#303030]">{money.format(account.amount)}</p></div>)}</div><button className="mt-5 w-full rounded-xl bg-[#F5F5F7] px-4 py-3 text-left text-sm font-semibold text-[#3629B7]">Добавить ещё источник <ArrowRight className="ml-2 inline h-4 w-4" /></button></section><section className="rounded-2xl bg-[#3629B7] p-5 text-white md:p-6"><div className="flex items-center gap-2 text-white/70"><ShieldCheck className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wider">Запас без зарплаты</span></div><p className="mt-5 text-4xl font-bold">{reserve} мес.</p><p className="mt-2 text-sm leading-relaxed text-white/70">Ориентир при обязательных расходах 70 662 ₽ в месяц.</p><button className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Проверить сценарий <ArrowRight className="h-4 w-4" /></button></section></div>
-    <div className="grid gap-4 lg:grid-cols-2"><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5"><SectionTitle icon={ReceiptText} title="Ближайшие обязательства" /><div className="mt-4 space-y-3"><Row label="Кредитный платёж" detail="15 октября" value="10 662 ₽" /><Row label="Обязательные расходы" detail="до конца месяца" value="60 000 ₽" /></div></section><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5"><SectionTitle icon={Target} title="Деньги без назначения" /><p className="mt-4 text-2xl font-bold text-[#303030]">{money.format(available)}</p><p className="mt-1 text-sm text-[#8E8E93]">Вы ещё не назначили этим деньгам цель.</p></section></div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Metric icon={Wallet} label="Доступно сейчас" value={money.format(snapshot.available)} hint="Деньги без продажи активов" /><Metric icon={PiggyBank} label="Сбережения" value={money.format(snapshot.savings)} hint="Банковские счета и накопления" /><Metric icon={TrendingUp} label="Стоимость инвестиций" value={money.format(snapshot.investments)} hint="Текущая стоимость портфеля" /><Metric icon={CreditCard} label="Остаток долгов" value={money.format(snapshot.debt)} hint="Все обязательства вместе" /></div>
+    <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]"><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5 md:p-6"><h2 className="text-lg font-bold text-[#303030]">Источники денег</h2><p className="mt-1 text-sm text-[#8E8E93]">Последнее обновление показано рядом с суммой.</p><div className="mt-5 divide-y divide-[#F0F0F2]">{(snapshot.accounts.length ? snapshot.accounts : [{ id: "fallback", name: "Основной счёт", type: "bank" as const, balance: snapshot.available, currency: "RUB", addedAt: new Date().toISOString() }]).map((account) => <div key={account.id} className="flex items-center justify-between gap-4 py-4 first:pt-0"><div className="flex items-center gap-3"><div className="rounded-xl bg-[#F0EEFF] p-2.5 text-[#3629B7]"><Landmark className="h-5 w-5" /></div><div><p className="text-sm font-semibold text-[#303030]">{account.name}</p><p className="text-xs text-[#8E8E93]">{account.type === "broker" ? "Брокерский счёт" : "Банковский счёт"} · ваши данные</p></div></div><p className="text-sm font-bold text-[#303030]">{money.format(account.balance)}</p></div>)}</div><button className="mt-5 w-full rounded-xl bg-[#F5F5F7] px-4 py-3 text-left text-sm font-semibold text-[#3629B7]">Добавить ещё источник <ArrowRight className="ml-2 inline h-4 w-4" /></button></section><section className="rounded-2xl bg-[#3629B7] p-5 text-white md:p-6"><div className="flex items-center gap-2 text-white/70"><ShieldCheck className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wider">Запас без зарплаты</span></div><p className="mt-5 text-4xl font-bold">{reserve} мес.</p><p className="mt-2 text-sm leading-relaxed text-white/70">Ориентир при обязательных расходах 70 662 ₽ в месяц.</p><button className="mt-6 inline-flex items-center gap-2 text-sm font-semibold">Проверить сценарий <ArrowRight className="h-4 w-4" /></button></section></div>
+    <div className="grid gap-4 lg:grid-cols-2"><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5"><SectionTitle icon={ReceiptText} title="Ближайшие обязательства" /><div className="mt-4 space-y-3"><Row label="Кредитный платёж" detail="15 октября" value="10 662 ₽" /><Row label="Обязательные расходы" detail="до конца месяца" value="60 000 ₽" /></div></section><section className="rounded-2xl border border-[#E5E5EA] bg-white p-5"><SectionTitle icon={Target} title="Деньги без назначения" /><p className="mt-4 text-2xl font-bold text-[#303030]">{money.format(snapshot.available)}</p><p className="mt-1 text-sm text-[#8E8E93]">Вы ещё не назначили этим деньгам цель.</p></section></div>
     <div className="flex items-center gap-2 rounded-xl border border-[#E5E5EA] bg-white px-4 py-3 text-xs text-[#8E8E93]"><CircleHelp className="h-4 w-4 text-[#3629B7]" />Данные неполные: добавьте вклад и инвестиции, чтобы расчёт был точнее.</div>
   </>;
 }
