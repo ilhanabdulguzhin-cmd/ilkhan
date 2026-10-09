@@ -12,10 +12,11 @@ import {
   LayoutDashboard, Upload, UserCircle, Settings, LogOut, Plus,
   Menu, X, ChevronLeft, ChevronRight, Sparkles,
   ShoppingCart, TrendingUp, CreditCard, ShieldAlert,
-  ShoppingBag, Receipt, Link2, Target, CircleHelp,
+  ShoppingBag, Receipt, Link2, Calculator, Users,
 } from "lucide-react";
 
-// Навигация повторяет ключевой путь продукта: обзор → сценарии → инструменты → план → обучение.
+// ── Navigation Architecture ────────────────────────────────────────────────────
+// Web 4.0 structure: 4 life-domains + core utility sections
 
 const LIFE_SECTIONS = [
   {
@@ -41,7 +42,7 @@ const LIFE_SECTIONS = [
   },
   {
     href: "/fraud",
-    label: "Безопасность",
+    label: "Защита и комплаенс",
     icon: ShieldAlert,
     color: "#FF3B30",
     desc: "Мошенничество, ФЗ-115, гайды",
@@ -49,23 +50,29 @@ const LIFE_SECTIONS = [
 ] as const;
 
 const navItems = [
-  { href: "/dashboard", label: "Обзор", icon: LayoutDashboard, group: "main" },
-  { href: "/what-if", label: "Что если", icon: ShieldAlert, group: "main" },
-  { href: "/products", label: "Инструменты", icon: ShoppingBag, group: "main" },
-  { href: "/plan", label: "Мой план", icon: Target, group: "main" },
-  { href: "/learn", label: "Разобраться", icon: CircleHelp, group: "main" },
-  { href: "/upload", label: "Добавить данные", icon: Upload, group: "account" },
-  { href: "/integrations", label: "Источники денег", icon: Link2, group: "account" },
-  { href: "/avatar", label: "Профиль", icon: UserCircle, group: "account" },
-  { href: "/settings", label: "Настройки", icon: Settings, group: "account" },
+  { href: "/dashboard",     label: "Личный кабинет",      icon: LayoutDashboard, group: "main" },
+  { href: "/daily-life",    label: "Бытовая жизнь",        icon: ShoppingCart,    group: "main", color: "#34C759" },
+  { href: "/invest",        label: "Инвестиции",           icon: TrendingUp,      group: "main", color: "#007AFF" },
+  { href: "/credits",       label: "Кредиты и долги",      icon: CreditCard,      group: "main", color: "#FF9500" },
+  { href: "/fraud",         label: "Защита и комплаенс",   icon: ShieldAlert,     group: "main", color: "#FF3B30" },
+  { href: "/upload",        label: "Загрузка данных",      icon: Upload,          group: "core" },
+  { href: "/products",      label: "Банковские продукты",  icon: ShoppingBag,     group: "core" },
+  { href: "/transactions",  label: "Операции",             icon: Receipt,         group: "core" },
+  { href: "/integrations",  label: "Мои счета",            icon: Link2,           group: "core" },
+  { href: "/tax-helper",    label: "Налоги и вычеты",      icon: Calculator,      group: "core" },
+  { href: "/ai-consultant", label: "Кэшик — AI помощник",  icon: Sparkles,        group: "core" },
+  { href: "/avatar",        label: "Финансовый профиль",   icon: UserCircle,      group: "account" },
+  { href: "/consultants",   label: "Эксперты",             icon: Users,           group: "account" },
+  { href: "/business",      label: "Кабинет бизнеса",        icon: Users,           group: "account" },
+  { href: "/settings",      label: "Настройки",            icon: Settings,        group: "account" },
 ] as const;
 
 const mobileBottomNav = [
-  { href: "/dashboard", label: "Обзор", icon: LayoutDashboard },
-  { href: "/what-if", label: "Что если", icon: ShieldAlert },
-  { href: "/upload", label: "Добавить", icon: Plus, isAdd: true },
-  { href: "/plan", label: "Мой план", icon: Target },
-  { href: "/learn", label: "Разобраться", icon: CircleHelp },
+  { href: "/dashboard",     label: "Кабинет",  icon: LayoutDashboard },
+  { href: "/daily-life",    label: "Жизнь",    icon: ShoppingCart },
+  { href: "/upload",        label: "Добавить", icon: Plus, isAdd: true },
+  { href: "/invest",        label: "Инвест",   icon: TrendingUp },
+  { href: "/ai-consultant", label: "Кэшик",    icon: Sparkles },
 ] as const;
 
 export { LIFE_SECTIONS };
@@ -109,14 +116,14 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const currentNavLabel = currentNav?.label || "Monetrix";
 
   const groupLabels: Record<string, string> = {
-    main: "Мои деньги",
-    planning: "План",
+    main: "Жизненные разделы",
+    core: "Инструменты",
     account: "Аккаунт",
   };
 
   const SidebarNav = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <nav className="flex-1 py-2 px-2 overflow-y-auto">
-      {(["main", "account"] as const).map((group) => {
+      {(["main", "core", "account"] as const).map((group) => {
         const items = navItems.filter((i) => i.group === group);
         return (
           <div key={group} className="mb-3">
@@ -145,7 +152,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     <item.icon
                       className="w-4.5 h-4.5 shrink-0 w-[18px] h-[18px]"
-                      style={isActive ? { color: "white" } : accentColor ? { color: String(accentColor) } : undefined}
+                      style={isActive && accentColor ? { color: "white" } : accentColor ? { color: accentColor } : {}}
                     />
                     {!collapsed && <span className="truncate">{item.label}</span>}
                     {!collapsed && isActive && (
@@ -241,7 +248,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Link href="/ai-consultant" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#3629B7]/8 text-[#3629B7] text-xs font-semibold hover:bg-[#3629B7]/15 transition-colors border border-[#3629B7]/15">
               <Sparkles className="w-3.5 h-3.5" />
-              Помощь по расчёту
+              Спросить Кэшика
             </Link>
             <Link href="/upload" className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3629B7] text-white text-xs font-medium">
               <Plus className="w-3.5 h-3.5" /> Добавить
@@ -291,7 +298,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <nav className="flex-1 py-2 px-2">
-{(["main", "planning", "account"] as const).map((group) => {
+              {(["main", "core", "account"] as const).map((group) => {
                 const items = navItems.filter((i) => i.group === group);
                 return (
                   <div key={group} className="mb-3">

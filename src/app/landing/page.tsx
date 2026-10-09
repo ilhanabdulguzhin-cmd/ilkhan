@@ -6,13 +6,14 @@ import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
-  Shield, Sparkles, BarChart3, Lock, CheckCircle2,
-  ArrowRight, ChevronRight, Brain, FileSpreadsheet, Target,
+  Shield, Sparkles, Wallet, BarChart3, Lock, CheckCircle2,
+  ArrowRight, ChevronRight, Brain, FileSpreadsheet, Target, Medal,
   Receipt, Calculator, MessageCircle, Star, TrendingUp,
   Globe, Building2, Gift, ExternalLink,
   PiggyBank, Users, TrendingDown,
-  Home, Smartphone, LayoutDashboard,
-  CreditCard,
+  Activity, DollarSign, Home, Briefcase,
+  RefreshCw, LayoutDashboard, Settings, Smartphone,
+  LineChart, CreditCard,
 } from "lucide-react";
 import { MonetrixIcon } from "@/components/monetrix-logo";
 import { PWAInstallButton } from "@/components/pwa-install-button";
@@ -22,51 +23,51 @@ import { PWAInstallButton } from "@/components/pwa-install-button";
 const FEATURES = [
   {
     icon: LayoutDashboard,
-    title: "Общая картина",
-    desc: "Счета, доходы, расходы и обязательства в одном спокойном обзоре.",
+    title: "Финансовая панель",
+    desc: "Все счета, карты, вклады и наличные — в одном окне. Видите остаток, обязательства и свободный ресурс перед каждым решением.",
     color: "#3629B7",
-    link: "/dashboard",
-    label: "Открыть обзор",
+    link: "/",
+    label: "Открыть панель",
+  },
+  {
+    icon: Brain,
+    title: "AI-советник Кэшик",
+    desc: "ИИ анализирует введённые данные, показывает сценарии и предлагает рекомендации. Решения и операции всегда остаются за вами.",
+    color: "#007AFF",
+    link: "/ai-consultant",
+    label: "Спросить Кэшика",
   },
   {
     icon: BarChart3,
-    title: "Что будет дальше",
-    desc: "Проверьте, хватит ли денег, если доход изменится или появится крупная трата.",
-    color: "#007AFF",
-    link: "/dashboard",
-    label: "Проверить сценарий",
-  },
-  {
-    icon: Target,
-    title: "План без догадок",
-    desc: "Распределяйте доступные деньги по целям и сохраняйте понятные варианты.",
-    color: "#34C759",
-    link: "/dashboard",
-    label: "Собрать план",
-  },
-  {
-    icon: FileSpreadsheet,
-    title: "Свои данные",
-    desc: "Добавьте счёт вручную или загрузите выписку с предпросмотром до импорта.",
+    title: "Аналитика и ML-прогнозы",
+    desc: "Показывает, что изменилось, почему это важно и какой следующий шаг даст измеримый эффект для бюджета.",
     color: "#FF9500",
-    link: "/upload",
-    label: "Добавить данные",
+    link: "/ai-consultant",
+    label: "Попробовать ML",
+  },
+  {
+    icon: Medal,
+    title: "Геймификация и рейтинг",
+    desc: "Финансовый рейтинг, уровни, достижения за каждое осознанное действие. Управление деньгами становится привычкой.",
+    color: "#34C759",
+    link: "/avatar",
+    label: "Мой рейтинг",
+  },
+  {
+    icon: Building2,
+    title: "Финансы для бизнеса",
+    desc: "Для юрлиц и ИП: кассы, налоги, кэшбэк на бизнес-траты, подписки сотрудников. Всё в одном приложении.",
+    color: "#FF3B30",
+    link: "/products",
+    label: "Для бизнеса",
   },
   {
     icon: Shield,
-    title: "Без лишнего риска",
-    desc: "Каждый расчёт показывает исходные данные, допущения и ограничения.",
-    color: "#5AC8FA",
-    link: "/dashboard",
-    label: "Посмотреть пример",
-  },
-  {
-    icon: PiggyBank,
-    title: "Понять инструменты",
-    desc: "Короткие кейсы объясняют вклады, резерв и другие решения на простых примерах.",
+    title: "Безопасность и 115-ФЗ",
+    desc: "Риск-анализ счёта, защита от мошенников, проверка на фишинг. Данные зашифрованы на вашем устройстве (AES-256).",
     color: "#AF52DE",
-    link: "/products",
-    label: "Разобраться",
+    link: "/fraud",
+    label: "Проверить",
   },
 ];
 
@@ -139,7 +140,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white font-sans">
 
 
-      {/* ══════════════════��════════════════════════════════���═══════════════════
+      {/* ═══════════════════════════════════════════════════════════════════════
           NAVBAR
          ═══════════════════════════════════════════════════════════════════════ */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E5E5EA]">
@@ -179,17 +180,21 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm text-white/80 mb-8">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Разберитесь в своих финансах</span>
+              <span>Управляйте своими финансами на основе подсказок технологий</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-6">
-              Разберитесь в своих финансах
+              Управляйте своими финансами
               <br />
-              <span className="relative">и принимайте решения спокойнее</span>
+              <span className="relative">
+                с помощью технологичных подсказок
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full" />
+              </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Соберите доходы, расходы и обязательные платежи в одном месте. Поймите, сколько денег доступно сейчас, что будет дальше и какой шаг сделать первым.
+              Monetrix помогает видеть счета, анализировать траты и находить возможности для экономии. Получайте понятные подсказки, сравнивайте сценарии и принимайте решения самостоятельно.
+              Данные обрабатываются с учётом настроек приватности и защищаются современными средствами безопасности.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
@@ -247,7 +252,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════��═════════���════════════════════════
+      {/* ════════════════════════════════════��══════════════════════════════════
           HOW IT WORKS
          ════════════════════════════════════════════════════════════════════���═══ */}
       <section id="how" className="py-20 md:py-24 bg-[#F5F5F7]">
@@ -342,7 +347,7 @@ export default function LandingPage() {
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black mb-3">Спросите Кэшика — получите понятный разбор</h2>
                 <p className="text-white/70 text-sm leading-relaxed max-w-xl">
-                  ИИ анализирует введённые вами данные, показывает сценар��и и находит возможности для экономии. Он только предлагает варианты в рекомендательном формате: не управляет деньгами, не совершает операции и не несёт ответственности за финансовые решения.
+                  ИИ анализирует введённые вами данные, показывает сценарии и находит возможности для экономии. Он только предлагает варианты в рекомендательном формате: не управляет деньгами, не совершает операции и не несёт ответственности за финансовые решения.
                 </p>
               </div>
               <Link href="/ai-consultant">
