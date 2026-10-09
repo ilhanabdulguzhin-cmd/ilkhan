@@ -237,7 +237,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FEATURES SECTION
-         ════════���══════════════════════════════════════════════════════════════ */}
+         ══════════════════════════════════════════════════════════════════════ */}
       <section id="features" className="py-20 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
@@ -437,7 +437,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECURITY
-         ═════════════════════════════════════��═════════════════════════════════ */}
+         ═════════════════════════════════════���═════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-[#F5F5F7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="max-w-3xl mx-auto text-center">
@@ -447,7 +447,7 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-black text-[#303030] mb-4">Данные остаются у вас</h2>
             <p className="text-[#8E8E93] text-lg mb-8 max-w-xl mx-auto">
               Шифрование AES-256, хранение в браузере. Monetrix не получает ваши данные.
-              Нет серверов — нечего взламывать.
+              Нет серверов — не��его взламывать.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               {[
